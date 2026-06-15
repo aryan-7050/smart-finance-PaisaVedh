@@ -14,9 +14,6 @@ import { AnalyticsController } from './controllers/analytics.controller';
 import { SavingsController } from './controllers/savings.controller';
 import { ReportController } from './controllers/report.controller';
 import multer from 'multer';
-import { monthlyReportJob } from './jobs/monthlyReport.job';
-import { recurringDetectionJob } from './jobs/recurringDetection.job';
-import { budgetAlertJob } from './jobs/budgetAlert.job';
 import logger from './utils/logger';
 import dotenv from 'dotenv';
 
@@ -50,7 +47,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
 
-// ✅ Root route - Fixed the "Not Found - /" error
+// ========== ADD THESE ROUTES ==========
+
+// ✅ Root route - Fixes "Not Found - /" error
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
@@ -60,16 +59,14 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString(),
     endpoints: {
       health: '/health',
-      api: {
-        auth: '/api/auth',
-        transactions: '/api/transactions',
-        budgets: '/api/budgets',
-        analytics: '/api/analytics',
-        savings: '/api/savings',
-        reports: '/api/reports'
-      }
-    },
-    documentation: 'https://github.com/aryan-7050/smart-finance-PaisaVedh'
+      api: '/api',
+      auth: '/api/auth',
+      transactions: '/api/transactions',
+      budgets: '/api/budgets',
+      analytics: '/api/analytics',
+      savings: '/api/savings',
+      reports: '/api/reports'
+    }
   });
 });
 
@@ -84,12 +81,13 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ✅ API Info endpoint
+// ✅ API info endpoint
 app.get('/api', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'PaisaVedh API',
     version: '1.0.0',
+    documentation: 'https://github.com/aryan-7050/smart-finance-PaisaVedh',
     endpoints: {
       auth: {
         register: 'POST /api/auth/register',
@@ -129,6 +127,8 @@ app.get('/api', (req, res) => {
     }
   });
 });
+
+// ========== API ROUTES ==========
 
 // Auth Routes
 app.post('/api/auth/register', authController.register.bind(authController));
@@ -171,26 +171,35 @@ app.get('/api/reports/generate', protect, reportController.generateReport.bind(r
 app.post('/api/reports/send', protect, reportController.sendReport.bind(reportController));
 app.get('/api/reports/export', protect, reportController.getExportData.bind(reportController));
 
-// Error handling
+// ========== ERROR HANDLING ==========
+
+// 404 handler for undefined routes (MUST be after all other routes)
 app.use(notFound);
+
+// Global error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5002;
+
 const server = app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);
   logger.info(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`🔗 API available at: http://localhost:${PORT}/api`);
   logger.info(`❤️ Health check: http://localhost:${PORT}/health`);
+  logger.info(`🏠 Root: http://localhost:${PORT}/`);
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
+const shutdown = async () => {
+  logger.info('Shutting down gracefully...');
+  server.close(async () => {
     logger.info('HTTP server closed');
-    redisClient.disconnect();
+    await redisClient.disconnect();
     process.exit(0);
   });
-});
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 export default app;

@@ -162,3 +162,10 @@ export interface Config {
     model: string;
   };
 }
+
+// Error Types
+export interface AppError extends Error {
+  status?: number;
+  code?: string;
+  keyValue?: Record<string, any>;
+}

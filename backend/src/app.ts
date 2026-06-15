@@ -37,9 +37,10 @@ const reportController = new ReportController();
 connectDB();
 redisClient.connect();
 
-
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors());
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
@@ -49,9 +50,84 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
 
-// Health check
+// ✅ Root route - Fixed the "Not Found - /" error
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to PaisaVedh API Server',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      api: {
+        auth: '/api/auth',
+        transactions: '/api/transactions',
+        budgets: '/api/budgets',
+        analytics: '/api/analytics',
+        savings: '/api/savings',
+        reports: '/api/reports'
+      }
+    },
+    documentation: 'https://github.com/aryan-7050/smart-finance-PaisaVedh'
+  });
+});
+
+// ✅ Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date() });
+  res.status(200).json({
+    success: true,
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// ✅ API Info endpoint
+app.get('/api', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'PaisaVedh API',
+    version: '1.0.0',
+    endpoints: {
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login',
+        profile: 'GET /api/auth/profile',
+        changePassword: 'PUT /api/auth/change-password'
+      },
+      transactions: {
+        list: 'GET /api/transactions',
+        create: 'POST /api/transactions',
+        update: 'PUT /api/transactions/:id',
+        delete: 'DELETE /api/transactions/:id',
+        uploadCSV: 'POST /api/transactions/upload-csv'
+      },
+      budgets: {
+        list: 'GET /api/budgets',
+        create: 'POST /api/budgets',
+        update: 'PUT /api/budgets/:id',
+        delete: 'DELETE /api/budgets/:id',
+        alerts: 'GET /api/budgets/alerts'
+      },
+      analytics: {
+        dashboard: 'GET /api/analytics/dashboard',
+        insights: 'GET /api/analytics/insights',
+        cashflow: 'GET /api/analytics/cashflow'
+      },
+      savings: {
+        list: 'GET /api/savings/goals',
+        create: 'POST /api/savings/goals',
+        contribute: 'POST /api/savings/goals/:id/contribute'
+      },
+      reports: {
+        generate: 'GET /api/reports/generate',
+        export: 'GET /api/reports/export',
+        send: 'POST /api/reports/send'
+      }
+    }
+  });
 });
 
 // Auth Routes
@@ -100,9 +176,21 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+const server = app.listen(PORT, () => {
+  logger.info(`🚀 Server running on port ${PORT}`);
+  logger.info(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🔗 API available at: http://localhost:${PORT}/api`);
+  logger.info(`❤️ Health check: http://localhost:${PORT}/health`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    logger.info('HTTP server closed');
+    redisClient.disconnect();
+    process.exit(0);
+  });
 });
 
 export default app;

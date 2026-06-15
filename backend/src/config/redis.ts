@@ -1,72 +1,125 @@
 import logger from '../utils/logger';
 
 class MockRedisClient {
-  private storage: Map<string, any> = new Map();
-  private isConnected: boolean = true;
+  private store: Map<string, { value: any; expiry?: number }> = new Map();
+  private isConnectedFlag = false;
 
   async connect(): Promise<void> {
-    logger.info('Using in-memory cache (Redis not required)');
-    return Promise.resolve();
+    this.isConnectedFlag = true;
+    logger.info('Mock Redis connected (in-memory storage)');
   }
 
-  async set(key: string, value: any, ttl?: number): Promise<void> {
-    try {
-      this.storage.set(key, value);
-      if (ttl) {
-        setTimeout(() => this.storage.delete(key), ttl * 1000);
-      }
-    } catch (error) {
-      logger.error(`Cache set error for key ${key}:`, error);
-    }
+  async disconnect(): Promise<void> {
+    this.isConnectedFlag = false;
+    this.store.clear();
+    logger.info('Mock Redis disconnected');
   }
 
   async get(key: string): Promise<any> {
-    try {
-      return this.storage.get(key) || null;
-    } catch (error) {
-      logger.error(`Cache get error for key ${key}:`, error);
+    const item = this.store.get(key);
+    if (!item) return null;
+    
+    if (item.expiry && Date.now() > item.expiry) {
+      this.store.delete(key);
       return null;
     }
+    
+    return item.value;
+  }
+
+  async set(key: string, value: any, ttl?: number): Promise<void> {
+    this.store.set(key, {
+      value,
+      expiry: ttl ? Date.now() + ttl * 1000 : undefined,
+    });
   }
 
   async del(key: string): Promise<void> {
-    try {
-      this.storage.delete(key);
-    } catch (error) {
-      logger.error(`Cache delete error for key ${key}:`, error);
-    }
+    this.store.delete(key);
   }
 
   async exists(key: string): Promise<boolean> {
-    return this.storage.has(key);
+    return this.store.has(key);
   }
 
-  async increment(key: string, by: number = 1): Promise<number> {
-    const current = this.storage.get(key) || 0;
-    const newValue = current + by;
-    this.storage.set(key, newValue);
+  async increment(key: string): Promise<number> {
+    const current = (await this.get(key)) || 0;
+    const newValue = current + 1;
+    await this.set(key, newValue);
     return newValue;
   }
 
-  async expire(key: string, seconds: number): Promise<void> {
-    const value = this.storage.get(key);
-    if (value) {
-      setTimeout(() => this.storage.delete(key), seconds * 1000);
-    }
-  }
-
-  async flushAll(): Promise<void> {
-    this.storage.clear();
-    logger.info('Cache flushed');
-  }
-
-  getClient() {
-    return {
-      on: () => {},
-      emit: () => {},
-    };
+  isReady(): boolean {
+    return this.isConnectedFlag;
   }
 }
 
 export const redisClient = new MockRedisClient();
-export const cacheService = redisClient;
+
+// ✅ Add CacheService class here
+export class CacheService {
+  async get(key: string): Promise<any> {
+    try {
+      return await redisClient.get(key);
+    } catch (error) {
+      logger.error('Cache get error:', error);
+      return null;
+    }
+  }
+  
+  async set(key: string, value: any, ttl: number = 3600): Promise<void> {
+    try {
+      await redisClient.set(key, value, ttl);
+    } catch (error) {
+      logger.error('Cache set error:', error);
+    }
+  }
+  
+  async del(key: string): Promise<void> {
+    try {
+      await redisClient.del(key);
+    } catch (error) {
+      logger.error('Cache del error:', error);
+    }
+  }
+  
+  async exists(key: string): Promise<boolean> {
+    try {
+      return await redisClient.exists(key);
+    } catch (error) {
+      logger.error('Cache exists error:', error);
+      return false;
+    }
+  }
+  
+  async increment(key: string): Promise<number> {
+    try {
+      return await redisClient.increment(key);
+    } catch (error) {
+      logger.error('Cache increment error:', error);
+      return 0;
+    }
+  }
+  
+  async flushPattern(pattern: string): Promise<void> {
+    logger.info(`Flush pattern called: ${pattern}`);
+  }
+  
+  async remember<T>(
+    key: string,
+    ttl: number,
+    callback: () => Promise<T>
+  ): Promise<T> {
+    const cached = await this.get(key);
+    if (cached) {
+      return cached as T;
+    }
+    
+    const result = await callback();
+    await this.set(key, result, ttl);
+    return result;
+  }
+}
+
+// ✅ Create and export cacheService instance
+export const cacheService = new CacheService();

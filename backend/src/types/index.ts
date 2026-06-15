@@ -1,9 +1,9 @@
 import { Request } from 'express';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 // User Types
 export interface IUserDocument extends Document {
-  _id: string;
+  _id: Types.ObjectId;
   name: string;
   email: string;
   password: string;
@@ -15,6 +15,13 @@ export interface IUserDocument extends Document {
     monthlyBudget: number;
     notificationEnabled: boolean;
   };
+  isEmailVerified: boolean;
+  verificationToken?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpiry?: Date;
+  failedLoginAttempts: number;
+  isLocked: boolean;
+  lockUntil?: Date;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -85,6 +92,7 @@ export interface ApiResponse<T = any> {
 // JWT Payload
 export interface JwtPayload {
   id: string;
+  email: string;
   role?: string;
 }
 

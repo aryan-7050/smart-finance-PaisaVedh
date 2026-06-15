@@ -268,3 +268,11 @@ ValidationError: Budget validation failed: category: `Food & Dining` is not a va
 2026-06-15 16:16:41 [INFO]: Environment: development  
 2026-06-15 16:16:44 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
 2026-06-15 16:16:51 [WARN]: MongoDB disconnected  
+2026-06-15 16:25:24 [INFO]: Using in-memory cache (Redis not required)  
+2026-06-15 16:25:24 [INFO]: Server running on port 5002  
+2026-06-15 16:25:24 [INFO]: Environment: development  
+2026-06-15 16:25:25 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-06-15 16:30:26 [INFO]: Using in-memory cache (Redis not required)  
+2026-06-15 16:30:26 [INFO]: Server running on port 5002  
+2026-06-15 16:30:26 [INFO]: Environment: development  
+2026-06-15 16:30:27 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  

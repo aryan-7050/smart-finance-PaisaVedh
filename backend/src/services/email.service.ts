@@ -16,6 +16,22 @@ class EmailService {
     });
   }
 
+  // Public method to send emails
+  public async sendEmail(to: string, subject: string, html: string): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: `"PaisaVedh" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        html,
+      });
+      logger.info(`Email sent to ${to}`);
+    } catch (error) {
+      logger.error('Email sending failed:', error);
+      throw error;
+    }
+  }
+
   async sendMonthlyReport(to: string, data: any): Promise<void> {
     const html = `
       <!DOCTYPE html>
@@ -44,29 +60,29 @@ class EmailService {
             <div class="summary">
               <div class="summary-card">
                 <div>Total Income</div>
-                <div class="amount">₹${data.totalIncome.toFixed(2)}</div>
+                <div class="amount">₹${data.totalIncome?.toFixed(2) || '0.00'}</div>
               </div>
               <div class="summary-card">
                 <div>Total Expenses</div>
-                <div class="amount">₹${data.totalExpenses.toFixed(2)}</div>
+                <div class="amount">₹${data.totalExpenses?.toFixed(2) || '0.00'}</div>
               </div>
               <div class="summary-card">
                 <div>Savings</div>
-                <div class="amount">₹${data.savings.toFixed(2)}</div>
+                <div class="amount">₹${data.savings?.toFixed(2) || '0.00'}</div>
               </div>
             </div>
             
             <h3>Top Spending Categories</h3>
             <ul class="category-list">
-              ${data.topCategories.map((cat: any) => `
+              ${data.topCategories?.map((cat: any) => `
                 <li class="category-item">
                   <span>${cat._id}</span>
-                  <span>₹${cat.total.toFixed(2)}</span>
+                  <span>₹${cat.total?.toFixed(2) || '0.00'}</span>
                 </li>
-              `).join('')}
+              `).join('') || '<li>No data available</li>'}
             </ul>
             
-            <p>Total Transactions: ${data.transactionCount}</p>
+            <p>Total Transactions: ${data.transactionCount || 0}</p>
             <p style="margin-top: 20px;">
               <a href="${process.env.FRONTEND_URL}/reports" style="background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                 View Detailed Report
@@ -107,21 +123,6 @@ class EmailService {
     `;
 
     await this.sendEmail(to, 'Budget Alert - Action Required', html);
-  }
-
-  private async sendEmail(to: string, subject: string, html: string): Promise<void> {
-    try {
-      await this.transporter.sendMail({
-        from: `"PaisaVedh" <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        html,
-      });
-      logger.info(`Email sent to ${to}`);
-    } catch (error) {
-      logger.error('Email sending failed:', error);
-      throw error;
-    }
   }
 }
 

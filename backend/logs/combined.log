@@ -301,3 +301,10 @@ ValidationError: Budget validation failed: category: `Food & Dining` is not a va
 2026-06-15 19:43:02 [INFO]: 🏠 Root: http://localhost:5002/  
 2026-06-15 19:43:03 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-02.om0zmzi.mongodb.net  
 2026-06-15 20:05:47 [WARN]: MongoDB disconnected  
+2026-06-15 20:15:42 [INFO]: Mock Redis connected (in-memory storage)  
+2026-06-15 20:15:42 [INFO]: 🚀 Server running on port 5002  
+2026-06-15 20:15:42 [INFO]: 📍 Environment: development  
+2026-06-15 20:15:42 [INFO]: 🔗 API available at: http://localhost:5002/api  
+2026-06-15 20:15:42 [INFO]: ❤️ Health check: http://localhost:5002/health  
+2026-06-15 20:15:42 [INFO]: 🏠 Root: http://localhost:5002/  
+2026-06-15 20:15:43 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-01.om0zmzi.mongodb.net  

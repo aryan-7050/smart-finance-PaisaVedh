@@ -14,7 +14,7 @@ import Analytics from './pages/Analytics'
 import Savings from './pages/Savings'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
-import Profile from './pages/Profile'
+import Profile from './pages/profile'
 
 // Components
 import Layout from './components/common/Layout'

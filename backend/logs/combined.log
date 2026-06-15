@@ -353,3 +353,7 @@ Error: Not Found - /favicon.ico
 2026-06-15 21:11:33 [INFO]: ❤️ Health check: http://localhost:5002/health  
 2026-06-15 21:11:33 [INFO]: 🏠 Root: http://localhost:5002/  
 2026-06-15 21:11:33 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-02.om0zmzi.mongodb.net  
+2026-06-15 21:18:27 [INFO]: Mock Redis connected (in-memory storage)  
+2026-06-15 21:18:27 [INFO]: 🚀 Server running on port 5002  
+2026-06-15 21:18:27 [INFO]: 🌍 Frontend allowed: http://localhost:5173, http://localhost:3000, https://frontend-two-theta-39.vercel.app  
+2026-06-15 21:18:28 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  

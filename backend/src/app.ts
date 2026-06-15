@@ -42,7 +42,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173', // Local development
-      process.env.FRONTEND_URL || 'https://your-project.vercel.app'
+      process.env.FRONTEND_URL || 'https://frontend-two-theta-39.vercel.app'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],

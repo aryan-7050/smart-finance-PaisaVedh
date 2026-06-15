@@ -7,12 +7,23 @@ import { emailService } from './email.service';
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
 
-interface BudgetWithSpending extends IBudget {
+// Extended interface for budget with spending data
+interface BudgetWithSpending {
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  category: string;
+  amount: number;
   spent: number;
   remaining: number;
   percentageUsed: number;
   status: 'on_track' | 'warning' | 'exceeded';
   transactionCount: number;
+  month: number;
+  year: number;
+  alerts: boolean;
+  alertThreshold: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface BudgetAlert {
@@ -35,6 +46,16 @@ interface BudgetRecommendation {
   priority: 'high' | 'medium' | 'low';
 }
 
+interface VarianceAnalysisItem {
+  category: string;
+  budgeted: number;
+  actual: number;
+  variance: number;
+  variancePercentage: number;
+  status: 'under_budget' | 'over_budget';
+  recommendation: string;
+}
+
 export class BudgetService {
   
   /**
@@ -42,7 +63,6 @@ export class BudgetService {
    */
   async createBudget(budgetData: Partial<IBudget>): Promise<IBudget> {
     try {
-      // Check if budget already exists for this category and month
       const targetMonth = budgetData.month !== undefined ? budgetData.month : new Date().getMonth();
       const targetYear = budgetData.year !== undefined ? budgetData.year : new Date().getFullYear();
 
@@ -64,8 +84,6 @@ export class BudgetService {
       });
 
       await budget.save();
-
-      // Invalidate cache
       await this.invalidateBudgetCache(budgetData.userId!.toString());
 
       logger.info(`Budget created for user ${budgetData.userId}, category: ${budgetData.category}`);
@@ -90,13 +108,11 @@ export class BudgetService {
       
       const cacheKey = `budgets:${userId}:${targetMonth}:${targetYear}`;
       
-      // Try to get from cache
       const cached = await cacheService.get(cacheKey);
       if (cached) {
         return cached as BudgetWithSpending[];
       }
 
-      // Get all budgets for the month
       const budgets = await Budget.find({
         userId: new mongoose.Types.ObjectId(userId),
         month: targetMonth,
@@ -107,8 +123,7 @@ export class BudgetService {
         return [];
       }
 
-      // Get spending for each category using aggregation
-      const budgetsWithSpending = await Promise.all(
+      const budgetsWithSpending: BudgetWithSpending[] = await Promise.all(
         budgets.map(async (budget) => {
           const spending = await Transaction.aggregate([
             {
@@ -144,20 +159,26 @@ export class BudgetService {
           }
 
           return {
-            ...budget.toObject(),
+            _id: budget._id,
+            userId: budget.userId,
+            category: budget.category,
+            amount: budget.amount,
             spent,
             remaining,
             percentageUsed,
             status,
             transactionCount,
+            month: budget.month,
+            year: budget.year,
+            alerts: budget.alerts,
+            alertThreshold: budget.alertThreshold,
+            createdAt: budget.createdAt,
+            updatedAt: budget.updatedAt,
           };
         })
       );
 
-      // Sort by percentage used (highest first)
       budgetsWithSpending.sort((a, b) => b.percentageUsed - a.percentageUsed);
-
-      // Cache for 15 minutes
       await cacheService.set(cacheKey, budgetsWithSpending, 900);
 
       return budgetsWithSpending;
@@ -232,7 +253,6 @@ export class BudgetService {
       const alerts: BudgetAlert[] = [];
 
       for (const budget of budgets) {
-        // Check for threshold alerts (80% or custom threshold)
         const threshold = budget.alertThreshold || 80;
         
         if (budget.percentageUsed >= threshold && budget.percentageUsed < 100) {
@@ -245,12 +265,9 @@ export class BudgetService {
             message: `${budget.category}: ${budget.percentageUsed.toFixed(1)}% used (₹${budget.spent.toFixed(2)} / ₹${budget.amount.toFixed(2)})`,
           };
           alerts.push(alert);
-
-          // Create notification in database
           await this.createBudgetNotification(userId, budget, 'warning');
         }
 
-        // Check for exceeded budgets
         if (budget.percentageUsed >= 100) {
           const alert: BudgetAlert = {
             budgetId: budget._id.toString(),
@@ -261,11 +278,9 @@ export class BudgetService {
             message: `⚠️ ${budget.category}: Budget exceeded by ₹${(budget.spent - budget.amount).toFixed(2)}`,
           };
           alerts.push(alert);
-
           await this.createBudgetNotification(userId, budget, 'exceeded');
         }
 
-        // Check for mid-month progress alert (optional)
         if (monthProgress > 0.5 && budget.percentageUsed > 70 && budget.percentageUsed < threshold && budget.alerts) {
           const alert: BudgetAlert = {
             budgetId: budget._id.toString(),
@@ -279,7 +294,6 @@ export class BudgetService {
         }
       }
 
-      // Send email if there are critical alerts (exceeded or high warning)
       const criticalAlerts = alerts.filter(a => a.percentage >= 90);
       if (criticalAlerts.length > 0 && budgets.length > 0) {
         await this.sendBudgetAlertEmail(userId, criticalAlerts);
@@ -298,9 +312,7 @@ export class BudgetService {
   async getBudgetRecommendations(userId: string): Promise<BudgetRecommendation[]> {
     try {
       const recommendations: BudgetRecommendation[] = [];
-      
-      // Get last 3 months of data
-      const last3Months = [];
+      const last3Months: BudgetWithSpending[][] = [];
       const now = new Date();
       
       for (let i = 1; i <= 3; i++) {
@@ -313,14 +325,12 @@ export class BudgetService {
         last3Months.push(budgets);
       }
 
-      // Get current month budgets
       const currentBudgets = await this.getBudgets(
         userId,
         now.getMonth(),
         now.getFullYear()
       );
 
-      // Analyze each category
       const allCategories = new Set<string>();
       last3Months.forEach(monthBudgets => {
         monthBudgets.forEach(budget => allCategories.add(budget.category));
@@ -340,7 +350,6 @@ export class BudgetService {
           const avgSpending = historicalSpending.reduce((a, b) => a + b, 0) / historicalSpending.length;
           const currentBudget = currentBudgets.find(b => b.category === category);
           
-          // Check if spending is consistently high
           if (currentBudget && avgSpending > currentBudget.amount * 1.2) {
             recommendations.push({
               type: 'increase_budget',
@@ -352,7 +361,6 @@ export class BudgetService {
               priority: 'high',
             });
           } 
-          // Check if budget is too high
           else if (currentBudget && avgSpending < currentBudget.amount * 0.6) {
             recommendations.push({
               type: 'decrease_budget',
@@ -365,7 +373,6 @@ export class BudgetService {
               priority: 'medium',
             });
           }
-          // Check if no budget exists but spending is significant
           else if (!currentBudget && avgSpending > 5000) {
             recommendations.push({
               type: 'create_budget',
@@ -379,7 +386,6 @@ export class BudgetService {
         }
       }
 
-      // Check for overspending trends
       for (const budget of currentBudgets) {
         if (budget.percentageUsed > 80 && budget.percentageUsed < 100) {
           recommendations.push({
@@ -394,11 +400,10 @@ export class BudgetService {
         }
       }
 
-      // Sort by priority
       const priorityOrder = { high: 0, medium: 1, low: 2 };
       recommendations.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
-      return recommendations.slice(0, 5); // Return top 5 recommendations
+      return recommendations.slice(0, 5);
     } catch (error) {
       logger.error('Get budget recommendations error:', error);
       return [];
@@ -578,7 +583,7 @@ export class BudgetService {
 
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
-      const createdBudgets = [];
+      const createdBudgets: IBudget[] = [];
 
       for (const defaultBudget of defaultBudgets) {
         try {
@@ -591,7 +596,6 @@ export class BudgetService {
           });
           createdBudgets.push(budget);
         } catch (error) {
-          // Budget might already exist
           logger.warn(`Could not create default budget for ${defaultBudget.category}:`, error);
         }
       }
@@ -613,7 +617,7 @@ export class BudgetService {
       const currentYear = new Date().getFullYear();
       const budgets = await this.getBudgets(userId, currentMonth, currentYear);
 
-      const varianceAnalysis = budgets.map(budget => ({
+      const varianceAnalysis: VarianceAnalysisItem[] = budgets.map(budget => ({
         category: budget.category,
         budgeted: budget.amount,
         actual: budget.spent,
@@ -621,7 +625,7 @@ export class BudgetService {
         variancePercentage: budget.amount > 0 
           ? ((budget.spent - budget.amount) / budget.amount) * 100 
           : 0,
-        status: budget.variance >= 0 ? 'under_budget' : 'over_budget',
+        status: budget.spent <= budget.amount ? 'under_budget' : 'over_budget',
         recommendation: this.getVarianceRecommendation(budget),
       }));
 
@@ -653,7 +657,6 @@ export class BudgetService {
    */
   private async invalidateBudgetCache(userId: string): Promise<void> {
     try {
-      // Invalidate all budget caches for this user (current and previous months)
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
       
@@ -677,7 +680,6 @@ export class BudgetService {
     type: 'warning' | 'exceeded'
   ): Promise<void> {
     try {
-      // Check if notification already sent today for this budget
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -689,7 +691,7 @@ export class BudgetService {
       });
 
       if (existingNotification) {
-        return; // Don't send duplicate notifications
+        return;
       }
 
       const notification = new Notification({
@@ -768,5 +770,4 @@ export class BudgetService {
   }
 }
 
-// Export a singleton instance
 export const budgetService = new BudgetService();

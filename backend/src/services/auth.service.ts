@@ -1,5 +1,5 @@
 import { User, IUser } from '../models/User.model';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { emailService } from './email.service';
@@ -354,29 +354,39 @@ export class AuthService {
     }
   }
 
-  private generateAccessToken(user: IUser): string {
-    const payload: TokenPayload = {
-      id: user._id.toString(),
-      email: user.email,
-      role: user.role,
-    };
-    
-    return jwt.sign(payload, process.env.JWT_SECRET!, {
-      expiresIn: process.env.JWT_EXPIRE || '1d',
-    });
+private generateAccessToken(user: IUser): string {
+  const payload: TokenPayload = {
+    id: user._id.toString(),
+    email: user.email,
+    role: user.role,
+  };
+  
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
   }
+  
+  return jwt.sign(payload, secret, {
+    expiresIn: process.env.JWT_EXPIRE || '1d',
+  } as jwt.SignOptions);
+}
 
-  private generateRefreshToken(user: IUser): string {
-    const payload: TokenPayload = {
-      id: user._id.toString(),
-      email: user.email,
-      role: user.role,
-    };
-    
-    return jwt.sign(payload, process.env.JWT_SECRET!, {
-      expiresIn: '7d',
-    });
+private generateRefreshToken(user: IUser): string {
+  const payload: TokenPayload = {
+    id: user._id.toString(),
+    email: user.email,
+    role: user.role,
+  };
+  
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
   }
+  
+  return jwt.sign(payload, secret, {
+    expiresIn: '7d',
+  } as jwt.SignOptions);
+}
 
   private generateVerificationToken(): string {
     return crypto.randomBytes(32).toString('hex');

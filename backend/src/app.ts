@@ -24,19 +24,21 @@ import logger from './utils/logger';
 dotenv.config();
 
 const app = express();
-
-/* =========================
-   RENDER FIX (IMPORTANT)
-========================= */
-app.set('trust proxy', 1);
-
 const upload = multer({ dest: 'uploads/' });
 
 /* =========================
-   DB CONNECTION
+   RENDER FIX
+========================= */
+app.set('trust proxy', 1);
+
+/* =========================
+   DATABASE CONNECTION
 ========================= */
 connectDB();
-redisClient.connect();
+
+redisClient.connect().catch((err) => {
+  console.error('Redis connection failed:', err);
+});
 
 /* =========================
    CONTROLLERS
@@ -49,24 +51,24 @@ const savingsController = new SavingsController();
 const reportController = new ReportController();
 
 /* =========================
-   SECURITY MIDDLEWARE
+   SECURITY
 ========================= */
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
 /* =========================
-   CORS FIX
+   CORS
 ========================= */
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'https://paisavedh.vercel.app',
   'https://frontend-two-theta-39.vercel.app',
-  process.env.FRONTEND_URL
-].filter(Boolean) as string[];
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 app.use(
   cors({
@@ -77,14 +79,13 @@ app.use(
         return callback(null, true);
       }
 
-      console.log("❌ Blocked CORS:", origin);
+      console.log('Blocked Origin:', origin);
 
-      // DO NOT break production
-      return callback(null, true);
+      return callback(new Error('CORS Not Allowed'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -98,25 +99,32 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 /* =========================
-   RATE LIMITING
+   RATE LIMIT
 ========================= */
-app.use('/api/', limiter);
-app.use('/api/auth/', authLimiter);
+app.use('/api', limiter);
+app.use('/api/auth', authLimiter);
 
 /* =========================
-   HEALTH ROUTES
+   TEST ROUTES
 ========================= */
 app.get('/', (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    message: 'PaisaVedh API Running'
+    message: 'PaisaVedh Backend Running',
   });
 });
 
 app.get('/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    status: 'healthy'
+    status: 'healthy',
+  });
+});
+
+app.get('/api', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'PaisaVedh API Active',
   });
 });
 
@@ -126,35 +134,57 @@ app.get('/health', (req, res) => {
 app.post('/api/auth/register', authController.register.bind(authController));
 app.post('/api/auth/login', authController.login.bind(authController));
 app.post('/api/auth/refresh', authController.refreshToken.bind(authController));
+
 app.post('/api/auth/logout', protect, authController.logout.bind(authController));
 app.get('/api/auth/profile', protect, authController.getProfile.bind(authController));
 app.put('/api/auth/profile', protect, authController.updateProfile.bind(authController));
 app.put('/api/auth/change-password', protect, authController.changePassword.bind(authController));
 
 /* =========================
-   OTHER ROUTES
+   TRANSACTIONS
 ========================= */
 app.get('/api/transactions', protect, transactionController.getTransactions.bind(transactionController));
 app.post('/api/transactions', protect, transactionController.createTransaction.bind(transactionController));
-
 app.post('/api/transactions/upload-csv', protect, upload.single('file'), transactionController.uploadCSV.bind(transactionController));
+app.get('/api/transactions/stats', protect, transactionController.getTransactionStats.bind(transactionController));
+app.put('/api/transactions/:id', protect, transactionController.updateTransaction.bind(transactionController));
+app.delete('/api/transactions/:id', protect, transactionController.deleteTransaction.bind(transactionController));
 
+/* =========================
+   BUDGETS
+========================= */
 app.get('/api/budgets', protect, budgetController.getBudgets.bind(budgetController));
+app.post('/api/budgets', protect, budgetController.createBudget.bind(budgetController));
 
+/* =========================
+   ANALYTICS
+========================= */
 app.get('/api/analytics/dashboard', protect, analyticsController.getDashboardData.bind(analyticsController));
 
 /* =========================
-   ERROR HANDLERS
+   SAVINGS
+========================= */
+app.get('/api/savings/goals', protect, savingsController.getGoals.bind(savingsController));
+
+/* =========================
+   REPORTS
+========================= */
+app.get('/api/reports/generate', protect, reportController.generateReport.bind(reportController));
+
+/* =========================
+   ERROR HANDLER
 ========================= */
 app.use(notFound);
 app.use(errorHandler);
 
 /* =========================
-   START SERVER
+   SERVER
 ========================= */
 const PORT = process.env.PORT || 5002;
 
 app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);
-  logger.info(`🌍 Frontend allowed: ${process.env.FRONTEND_URL}`);
+  logger.info(`🌍 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 });
+
+export default app;

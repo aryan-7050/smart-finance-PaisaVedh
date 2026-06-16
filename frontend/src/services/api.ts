@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // ✅ Add /api to the URL
-const API_URL = import.meta.env.VITE_API_URL || 'https://smart-finance-paisavedh.onrender.com/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://smart-finance-paisavedh.onrender.com'
 
 console.log('🔗 API_URL:', API_URL)
 

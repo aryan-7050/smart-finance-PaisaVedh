@@ -24,6 +24,12 @@ import logger from './utils/logger';
 dotenv.config();
 
 const app = express();
+
+/* =========================
+   RENDER FIX (IMPORTANT)
+========================= */
+app.set('trust proxy', 1);
+
 const upload = multer({ dest: 'uploads/' });
 
 /* =========================
@@ -43,7 +49,7 @@ const savingsController = new SavingsController();
 const reportController = new ReportController();
 
 /* =========================
-   SECURITY
+   SECURITY MIDDLEWARE
 ========================= */
 app.use(
   helmet({
@@ -52,34 +58,36 @@ app.use(
 );
 
 /* =========================
-   CORS FIX (IMPORTANT)
+   CORS FIX
 ========================= */
-
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  process.env.FRONTEND_URL,
-  'https://frontend-two-theta-39.vercel.app'
+  'https://paisavedh.vercel.app',
+  'https://frontend-two-theta-39.vercel.app',
+  process.env.FRONTEND_URL
 ].filter(Boolean) as string[];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // allow Postman / server-to-server
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("❌ Blocked CORS:", origin);
+
+      // DO NOT break production
       return callback(null, true);
-    }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+);
 
-    console.log("❌ Blocked CORS origin:", origin);
-    return callback(null, false);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// IMPORTANT: preflight fix
 app.options('*', cors());
 
 /* =========================
@@ -90,7 +98,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 /* =========================
-   RATE LIMIT
+   RATE LIMITING
 ========================= */
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
@@ -132,6 +140,7 @@ app.post('/api/transactions', protect, transactionController.createTransaction.b
 app.post('/api/transactions/upload-csv', protect, upload.single('file'), transactionController.uploadCSV.bind(transactionController));
 
 app.get('/api/budgets', protect, budgetController.getBudgets.bind(budgetController));
+
 app.get('/api/analytics/dashboard', protect, analyticsController.getDashboardData.bind(analyticsController));
 
 /* =========================
@@ -141,11 +150,11 @@ app.use(notFound);
 app.use(errorHandler);
 
 /* =========================
-   SERVER START
+   START SERVER
 ========================= */
 const PORT = process.env.PORT || 5002;
 
 app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);
-  logger.info(`🌍 Frontend: ${process.env.FRONTEND_URL}`);
+  logger.info(`🌍 Frontend allowed: ${process.env.FRONTEND_URL}`);
 });

@@ -60,35 +60,17 @@ app.use(
 );
 
 /* =========================
-   CORS
+   CORS - FIXED FOR PRODUCTION
 ========================= */
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'https://paisavedh.vercel.app',
-  'https://frontend-two-theta-39.vercel.app',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+// ✅ Allow all origins for testing (fixes Network Error)
+app.use(cors({
+  origin: true, // Dynamically reflects the request origin
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.log('Blocked Origin:', origin);
-
-      return callback(new Error('CORS Not Allowed'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
-
+// Handle preflight requests
 app.options('*', cors());
 
 /* =========================
@@ -111,6 +93,7 @@ app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'PaisaVedh Backend Running',
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -118,6 +101,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
     status: 'healthy',
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -125,6 +109,7 @@ app.get('/api', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'PaisaVedh API Active',
+    version: '1.0.0',
   });
 });
 
@@ -155,24 +140,35 @@ app.delete('/api/transactions/:id', protect, transactionController.deleteTransac
 ========================= */
 app.get('/api/budgets', protect, budgetController.getBudgets.bind(budgetController));
 app.post('/api/budgets', protect, budgetController.createBudget.bind(budgetController));
+app.put('/api/budgets/:id', protect, budgetController.updateBudget.bind(budgetController));
+app.delete('/api/budgets/:id', protect, budgetController.deleteBudget.bind(budgetController));
+app.get('/api/budgets/alerts', protect, budgetController.getBudgetAlerts.bind(budgetController));
 
 /* =========================
    ANALYTICS
 ========================= */
 app.get('/api/analytics/dashboard', protect, analyticsController.getDashboardData.bind(analyticsController));
+app.get('/api/analytics/insights', protect, analyticsController.getSpendingInsights.bind(analyticsController));
+app.get('/api/analytics/cashflow', protect, analyticsController.getCashFlow.bind(analyticsController));
 
 /* =========================
    SAVINGS
 ========================= */
 app.get('/api/savings/goals', protect, savingsController.getGoals.bind(savingsController));
+app.post('/api/savings/goals', protect, savingsController.createGoal.bind(savingsController));
+app.put('/api/savings/goals/:id', protect, savingsController.updateGoal.bind(savingsController));
+app.post('/api/savings/goals/:id/contribute', protect, savingsController.addContribution.bind(savingsController));
+app.delete('/api/savings/goals/:id', protect, savingsController.deleteGoal.bind(savingsController));
 
 /* =========================
    REPORTS
 ========================= */
 app.get('/api/reports/generate', protect, reportController.generateReport.bind(reportController));
+app.post('/api/reports/send', protect, reportController.sendReport.bind(reportController));
+app.get('/api/reports/export', protect, reportController.getExportData.bind(reportController));
 
 /* =========================
-   ERROR HANDLER
+   ERROR HANDLER - MUST BE LAST
 ========================= */
 app.use(notFound);
 app.use(errorHandler);
@@ -182,9 +178,21 @@ app.use(errorHandler);
 ========================= */
 const PORT = process.env.PORT || 5002;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);
-  logger.info(`🌍 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
+  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🔗 API URL: http://localhost:${PORT}/api`);
+  logger.info(`🌐 FRONTEND_URL: ${process.env.FRONTEND_URL || 'Not set'}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    logger.info('HTTP server closed');
+    redisClient.disconnect().catch(console.error);
+    process.exit(0);
+  });
 });
 
 export default app;

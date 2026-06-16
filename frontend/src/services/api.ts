@@ -1,19 +1,18 @@
 import axios from 'axios'
 
-/* =========================
-   BASE URL (FIXED)
-========================= */
-// ❌ DO NOT include /api here
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  'https://smart-finance-paisavedh.onrender.com'
+// ✅ Add /api to the URL
+const API_URL = import.meta.env.VITE_API_URL || 'https://smart-finance-paisavedh.onrender.com/api'
+
+console.log('🔗 API_URL:', API_URL)
 
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: API_URL,  // Now this already includes /api
   headers: {
     'Content-Type': 'application/json',
   },
 })
+
+// Rest of your code remains the same...
 
 /* =========================
    REQUEST INTERCEPTOR

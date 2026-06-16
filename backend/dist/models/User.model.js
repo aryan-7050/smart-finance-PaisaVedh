@@ -71,7 +71,24 @@ const UserSchema = new mongoose_1.Schema({
         theme: { type: String, enum: ['light', 'dark'], default: 'light' },
         monthlyBudget: { type: Number, default: 0 },
         notificationEnabled: { type: Boolean, default: true }
-    }
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: String,
+    resetPasswordToken: String,
+    resetPasswordExpiry: Date,
+    failedLoginAttempts: {
+        type: Number,
+        default: 0
+    },
+    isLocked: {
+        type: Boolean,
+        default: false
+    },
+    lockUntil: Date,
+    lastLogin: Date
 }, {
     timestamps: true
 });

@@ -385,3 +385,10 @@ Error: Not Found - /favicon.ico
 2026-06-15 21:59:39 [INFO]: ❤️ Health check: http://localhost:5002/health  
 2026-06-15 21:59:39 [INFO]: 🏠 Root: http://localhost:5002/  
 2026-06-15 21:59:40 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-01.om0zmzi.mongodb.net  
+2026-06-16 06:14:50 [INFO]: Mock Redis connected (in-memory storage)  
+2026-06-16 06:14:50 [INFO]: 🚀 Server running on port 5002  
+2026-06-16 06:14:50 [INFO]: 📍 Environment: development  
+2026-06-16 06:14:50 [INFO]: 🔗 API available at: http://localhost:5002/api  
+2026-06-16 06:14:50 [INFO]: ❤️ Health check: http://localhost:5002/health  
+2026-06-16 06:14:50 [INFO]: 🏠 Root: http://localhost:5002/  
+2026-06-16 06:14:53 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  

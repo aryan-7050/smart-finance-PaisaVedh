@@ -60,12 +60,24 @@ app.use(
 );
 
 /* =========================
-   CORS - FIXED FOR DEVELOPMENT & PRODUCTION
+   CORS - UPDATED FOR PRODUCTION (Vercel + Render)
 ========================= */
-// Allow all origins for development, specific for production
 const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://smart-finance-paisavedh.onrender.com'] 
-  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+  ? [
+      'https://smart-finance-paisavedh.onrender.com',
+      'https://paisavedh-frontend.vercel.app',
+      'https://paisavedh.vercel.app',
+      'https://smart-finance-paisavedh.vercel.app',
+      'https://*.vercel.app',
+      'https://*.onrender.com'
+    ] 
+  : [
+      'http://localhost:5173', 
+      'http://localhost:3000', 
+      'http://127.0.0.1:5173',
+      'http://localhost:5002',
+      'http://localhost:5003'
+    ];
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -77,10 +89,22 @@ app.use(cors({
       return callback(null, true);
     }
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // Check if origin is allowed (with wildcard support)
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed.includes('*')) {
+        // Convert wildcard pattern to regex
+        const pattern = allowed.replace(/\*/g, '.*');
+        const regex = new RegExp(`^${pattern}$`);
+        return regex.test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log('❌ Blocked by CORS:', origin);
+      console.log('✅ Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -204,7 +228,7 @@ app.use(errorHandler);
 /* =========================
    SERVER
 ========================= */
-const PORT = process.env.PORT || 5003; // Changed to 5003
+const PORT = process.env.PORT || 5003;
 
 const server = app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);

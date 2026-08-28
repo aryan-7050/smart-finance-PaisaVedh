@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 // Get API URL from environment
+// For Vercel: Set VITE_API_URL in environment variables
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003'
 
 // Ensure the URL ends with /api
@@ -8,7 +9,7 @@ const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`
 
 console.log('='.repeat(50))
 console.log('🔍 API Configuration:')
-console.log('  Mode:', import.meta.env.MODE)
+console.log('  Environment:', import.meta.env.MODE)
 console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL)
 console.log('  API_URL:', API_URL)
 console.log('  Base URL:', baseURL)
@@ -20,6 +21,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true,
+  timeout: 15000, // 15 seconds timeout
 })
 
 // Request interceptor for logging

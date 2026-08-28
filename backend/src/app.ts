@@ -37,7 +37,7 @@ app.set('trust proxy', 1);
 connectDB();
 
 redisClient.connect().catch((err) => {
-  console.error('Redis connection failed:', err);
+  logger.error('Redis connection failed:', err);
 });
 
 /* =========================
@@ -60,11 +60,30 @@ app.use(
 );
 
 /* =========================
-   CORS - FIXED FOR PRODUCTION
+   CORS - FIXED FOR DEVELOPMENT & PRODUCTION
 ========================= */
-// ✅ Allow all origins for testing (fixes Network Error)
+// Allow all origins for development, specific for production
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? ['https://smart-finance-paisavedh.onrender.com'] 
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+
 app.use(cors({
-  origin: true, // Dynamically reflects the request origin
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (process.env.NODE_ENV === 'development') {
+      // Allow all origins in development
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('❌ Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -81,10 +100,19 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 /* =========================
-   RATE LIMIT
+   RATE LIMIT - Conditional
 ========================= */
+// Rate limiting is now handled inside the middleware file
+// It will be disabled in development and enabled in production
 app.use('/api', limiter);
 app.use('/api/auth', authLimiter);
+
+/* =========================
+   FAVICON - Prevent 404 errors
+========================= */
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
 
 /* =========================
    TEST ROUTES
@@ -176,7 +204,7 @@ app.use(errorHandler);
 /* =========================
    SERVER
 ========================= */
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5003; // Changed to 5003
 
 const server = app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);
@@ -190,8 +218,18 @@ process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received: closing HTTP server');
   server.close(() => {
     logger.info('HTTP server closed');
-    redisClient.disconnect().catch(console.error);
+    redisClient.disconnect().catch((err) => {
+      logger.error('Redis disconnect error:', err);
+    });
     process.exit(0);
+  });
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  logger.error('Unhandled Rejection:', err);
+  server.close(() => {
+    process.exit(1);
   });
 });
 

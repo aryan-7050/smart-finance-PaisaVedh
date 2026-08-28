@@ -1,41 +1,53 @@
 import axios from 'axios'
 
-// ✅ Add /api to the URL
-const API_URL = import.meta.env.VITE_API_URL || 'https://smart-finance-paisavedh.onrender.com'
+// Get API URL from environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003'
 
-console.log('🔗 API_URL:', API_URL)
+// Ensure the URL ends with /api
+const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`
+
+console.log('='.repeat(50))
+console.log('🔍 API Configuration:')
+console.log('  Mode:', import.meta.env.MODE)
+console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL)
+console.log('  API_URL:', API_URL)
+console.log('  Base URL:', baseURL)
+console.log('='.repeat(50))
 
 const api = axios.create({
-  baseURL: API_URL,  // Now this already includes /api
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 })
 
-// Rest of your code remains the same...
-
-/* =========================
-   REQUEST INTERCEPTOR
-========================= */
+// Request interceptor for logging
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
-
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`)
+    if (config.data) {
+      console.log('  Data:', config.data)
+    }
     return config
   },
   (error) => Promise.reject(error)
 )
 
-/* =========================
-   RESPONSE INTERCEPTOR
-========================= */
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} - Status: ${response.status}`)
+    return response
+  },
   async (error) => {
+    console.error('❌ Response Error:', error.response?.status, error.response?.config?.url)
+    console.error('  Error Data:', error.response?.data)
+    
     const originalRequest = error.config
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -43,21 +55,26 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refreshToken')
+        if (!refreshToken) {
+          throw new Error('No refresh token')
+        }
 
         const response = await axios.post(
-          `${API_URL}/api/auth/refresh`,
+          `${baseURL}/auth/refresh`,
           { refreshToken }
         )
 
         const { token, refreshToken: newRefreshToken } = response.data
 
         localStorage.setItem('token', token)
-        localStorage.setItem('refreshToken', newRefreshToken)
+        if (newRefreshToken) {
+          localStorage.setItem('refreshToken', newRefreshToken)
+        }
 
         originalRequest.headers.Authorization = `Bearer ${token}`
-
         return api(originalRequest)
       } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError)
         localStorage.clear()
         window.location.href = '/login'
         return Promise.reject(refreshError)
@@ -68,9 +85,7 @@ api.interceptors.response.use(
   }
 )
 
-/* =========================
-   AUTH SERVICE
-========================= */
+// AUTH SERVICE
 export const authService = {
   register: (data: { name: string; email: string; password: string }) =>
     api.post('/auth/register', data),
@@ -91,9 +106,7 @@ export const authService = {
     api.put('/auth/change-password', data),
 }
 
-/* =========================
-   TRANSACTIONS
-========================= */
+// TRANSACTIONS
 export const transactionService = {
   getAll: (params?: any) =>
     api.get('/transactions', { params }),
@@ -110,7 +123,6 @@ export const transactionService = {
   uploadCSV: (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-
     return api.post('/transactions/upload-csv', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
@@ -120,9 +132,7 @@ export const transactionService = {
     api.get('/transactions/stats'),
 }
 
-/* =========================
-   BUDGETS
-========================= */
+// BUDGETS
 export const budgetService = {
   getAll: (params?: any) =>
     api.get('/budgets', { params }),
@@ -140,9 +150,7 @@ export const budgetService = {
     api.get('/budgets/alerts'),
 }
 
-/* =========================
-   ANALYTICS
-========================= */
+// ANALYTICS
 export const analyticsService = {
   getDashboard: () =>
     api.get('/analytics/dashboard'),
@@ -154,9 +162,7 @@ export const analyticsService = {
     api.get('/analytics/cashflow'),
 }
 
-/* =========================
-   SAVINGS
-========================= */
+// SAVINGS
 export const savingsService = {
   getAll: () =>
     api.get('/savings/goals'),
@@ -174,9 +180,7 @@ export const savingsService = {
     api.post(`/savings/goals/${id}/contribute`, data),
 }
 
-/* =========================
-   REPORTS
-========================= */
+// REPORTS
 export const reportService = {
   generate: (params?: any) =>
     api.get('/reports/generate', { params }),

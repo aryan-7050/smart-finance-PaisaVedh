@@ -40,12 +40,6 @@
 
 ---
 
-##  Screenshots
-
-<!-- Add your screenshots to a /screenshots folder and link them -->
-| Dashboard | Transactions |
-|-----------|--------------|
-| ![Dashboard](./screenshots/dashboard.png) | ![Transactions](./screenshots/transactions.png) |
 
 ---
 

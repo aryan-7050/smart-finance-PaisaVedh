@@ -1,84 +1,135 @@
-import axios from 'axios'
+import axios, {
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from 'axios'
 
-// Get API URL from environment
-// For Vercel: Set VITE_API_URL in environment variables
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003'
+// =====================================================
+// API CONFIGURATION
+// =====================================================
 
-// Ensure the URL ends with /api
-const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`
+const API_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:5003'
+).replace(/\/+$/, '')
 
-console.log('='.repeat(50))
-console.log('🔍 API Configuration:')
-console.log('  Environment:', import.meta.env.MODE)
-console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL)
-console.log('  API_URL:', API_URL)
-console.log('  Base URL:', baseURL)
-console.log('='.repeat(50))
+// Ensure base URL contains exactly one /api suffix
+const baseURL = API_URL.endsWith('/api')
+  ? API_URL
+  : `${API_URL}/api`
+
+console.log('==========================================')
+console.log('API Configuration')
+console.log('Environment:', import.meta.env.MODE)
+console.log('VITE_API_URL:', import.meta.env.VITE_API_URL)
+console.log('Base URL:', baseURL)
+console.log('==========================================')
+
+// =====================================================
+// AXIOS INSTANCE
+// =====================================================
 
 const api = axios.create({
-  baseURL: baseURL,
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
-  timeout: 15000, // 15 seconds timeout
+  timeout: 15000,
 })
 
-// Request interceptor for logging
+// =====================================================
+// REQUEST INTERCEPTOR
+// =====================================================
+
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token')
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    console.log(`📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`)
-    if (config.data) {
-      console.log('  Data:', config.data)
-    }
+
+    console.log(
+      `API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`
+    )
+
     return config
   },
-  (error) => Promise.reject(error)
+  (error: AxiosError) => Promise.reject(error)
 )
 
-// Response interceptor
-api.interceptors.response.use(
-  (response) => {
-    console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} - Status: ${response.status}`)
-    return response
-  },
-  async (error) => {
-    console.error('❌ Response Error:', error.response?.status, error.response?.config?.url)
-    console.error('  Error Data:', error.response?.data)
-    
-    const originalRequest = error.config
+// =====================================================
+// RESPONSE INTERCEPTOR
+// =====================================================
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    console.error('API Error:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+      data: error.response?.data,
+    })
+
+    const originalRequest = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined
+
+    // Do not attempt refresh for missing requests, repeated
+    // refresh attempts, or failed login/register requests.
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/auth/login') &&
+      !originalRequest.url?.includes('/auth/register') &&
+      !originalRequest.url?.includes('/auth/refresh')
+    ) {
       originalRequest._retry = true
 
       try {
         const refreshToken = localStorage.getItem('refreshToken')
+
         if (!refreshToken) {
-          throw new Error('No refresh token')
+          throw new Error('No refresh token available')
         }
 
         const response = await axios.post(
           `${baseURL}/auth/refresh`,
-          { refreshToken }
+          { refreshToken },
+          {
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true,
+            timeout: 15000,
+          }
         )
 
-        const { token, refreshToken: newRefreshToken } = response.data
+        const {
+          token,
+          refreshToken: newRefreshToken,
+        } = response.data
+
+        if (!token) {
+          throw new Error('Refresh response did not include a token')
+        }
 
         localStorage.setItem('token', token)
+
         if (newRefreshToken) {
           localStorage.setItem('refreshToken', newRefreshToken)
         }
 
         originalRequest.headers.Authorization = `Bearer ${token}`
+
         return api(originalRequest)
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError)
-        localStorage.clear()
+
+        localStorage.removeItem('token')
+        localStorage.removeItem('refreshToken')
+
         window.location.href = '/login'
+
         return Promise.reject(refreshError)
       }
     }
@@ -87,28 +138,39 @@ api.interceptors.response.use(
   }
 )
 
+// =====================================================
 // AUTH SERVICE
+// =====================================================
+
 export const authService = {
-  register: (data: { name: string; email: string; password: string }) =>
-    api.post('/auth/register', data),
+  register: (data: {
+    name: string
+    email: string
+    password: string
+  }) => api.post('/auth/register', data),
 
-  login: (data: { email: string; password: string }) =>
-    api.post('/auth/login', data),
+  login: (data: {
+    email: string
+    password: string
+  }) => api.post('/auth/login', data),
 
-  logout: () =>
-    api.post('/auth/logout'),
+  logout: () => api.post('/auth/logout'),
 
-  getProfile: () =>
-    api.get('/auth/profile'),
+  getProfile: () => api.get('/auth/profile'),
 
   updateProfile: (data: any) =>
     api.put('/auth/profile', data),
 
-  changePassword: (data: { currentPassword: string; newPassword: string }) =>
-    api.put('/auth/change-password', data),
+  changePassword: (data: {
+    currentPassword: string
+    newPassword: string
+  }) => api.put('/auth/change-password', data),
 }
 
-// TRANSACTIONS
+// =====================================================
+// TRANSACTION SERVICE
+// =====================================================
+
 export const transactionService = {
   getAll: (params?: any) =>
     api.get('/transactions', { params }),
@@ -125,16 +187,21 @@ export const transactionService = {
   uploadCSV: (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
+
     return api.post('/transactions/upload-csv', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     })
   },
 
-  getStats: () =>
-    api.get('/transactions/stats'),
+  getStats: () => api.get('/transactions/stats'),
 }
 
-// BUDGETS
+// =====================================================
+// BUDGET SERVICE
+// =====================================================
+
 export const budgetService = {
   getAll: (params?: any) =>
     api.get('/budgets', { params }),
@@ -148,26 +215,27 @@ export const budgetService = {
   delete: (id: string) =>
     api.delete(`/budgets/${id}`),
 
-  getAlerts: () =>
-    api.get('/budgets/alerts'),
+  getAlerts: () => api.get('/budgets/alerts'),
 }
 
-// ANALYTICS
+// =====================================================
+// ANALYTICS SERVICE
+// =====================================================
+
 export const analyticsService = {
-  getDashboard: () =>
-    api.get('/analytics/dashboard'),
+  getDashboard: () => api.get('/analytics/dashboard'),
 
-  getInsights: () =>
-    api.get('/analytics/insights'),
+  getInsights: () => api.get('/analytics/insights'),
 
-  getCashFlow: () =>
-    api.get('/analytics/cashflow'),
+  getCashFlow: () => api.get('/analytics/cashflow'),
 }
 
-// SAVINGS
+// =====================================================
+// SAVINGS SERVICE
+// =====================================================
+
 export const savingsService = {
-  getAll: () =>
-    api.get('/savings/goals'),
+  getAll: () => api.get('/savings/goals'),
 
   create: (data: any) =>
     api.post('/savings/goals', data),
@@ -178,17 +246,25 @@ export const savingsService = {
   delete: (id: string) =>
     api.delete(`/savings/goals/${id}`),
 
-  addContribution: (id: string, data: { amount: number; description: string }) =>
-    api.post(`/savings/goals/${id}/contribute`, data),
+  addContribution: (
+    id: string,
+    data: { amount: number; description: string }
+  ) => api.post(`/savings/goals/${id}/contribute`, data),
 }
 
-// REPORTS
+// =====================================================
+// REPORT SERVICE
+// =====================================================
+
 export const reportService = {
   generate: (params?: any) =>
     api.get('/reports/generate', { params }),
 
   export: (params?: any) =>
-    api.get('/reports/export', { params, responseType: 'blob' }),
+    api.get('/reports/export', {
+      params,
+      responseType: 'blob',
+    }),
 
   send: (data: any) =>
     api.post('/reports/send', data),

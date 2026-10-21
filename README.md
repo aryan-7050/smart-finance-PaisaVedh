@@ -1,77 +1,161 @@
-#  PaisaVedh - Personal Finance Management System
+#  PaisaVedh — AI-Powered Personal Finance
 
-##  Overview
-PaisaVedh is a modern, feature-rich personal finance management application that helps users track expenses, manage budgets, analyze spending patterns, and achieve financial goals. Built with cutting-edge technologies for a seamless user experience.
+> Smart financial management platform with AI insights.
 
-## Features
+🔗 **Live Demo:** [https://paisavedh.vercel.app](https://paisavedh.vercel.app)
 
-###  Dashboard
-- Real-time financial overview
-- Interactive spending charts
-- Income vs expenses tracking
-- AI-powered insights
-- Quick actions for transactions
+---
 
-###  Transaction Management
-- Add, edit, delete transactions
-- CSV import/export
-- Advanced filtering and search
-- Category-based organization
-- Transaction history
+## About
 
-###  Budget Planning
-- Create monthly budgets by category
-- Real-time budget tracking
-- Budget utilization alerts
-- Visual progress indicators
-- Budget vs actual analysis
+**PaisaVedh** is a smart personal finance platform that helps you track your money, understand your spending, and make better financial decisions with the help of AI-powered insights.
 
-###  Analytics
-- Spending pattern analysis
-- Category-wise breakdown
-- Financial health score
-- Cash flow forecasting
-- AI-powered recommendations
+---
 
-###  Savings Goals
-- Set and track savings targets
-- Contribution tracking
-- Progress visualization
-- Goal-based recommendations
-- Timeline projections
+##  Features
 
-###  Reports
-- Generate financial reports
-- Export data (CSV/JSON)
-- Email report functionality
-- Custom date ranges
-- Transaction summaries
+<!-- Edit this list to match what your app actually does -->
+- 📊 Dashboard with a clear overview of your finances
+- 💸 Income & expense tracking
+- 🗂️ Category-wise transaction management
+- 🎯 Budgeting and savings goals
+- 🤖 AI-powered insights and suggestions
+- 📈 Charts and analytics
+- 🔐 Secure user authentication
+- 📱 Fully responsive design
 
-###  User Features
-- Profile management
-- Dark/Light theme
-- Responsive design
-- Secure authentication
-- Role-based access (Admin/User)
+---
 
-##  Tech Stack
+## 🛠️ Tech Stack
 
-### Frontend
-- **React 18** - UI Framework
-- **TypeScript** - Type Safety
-- **Tailwind CSS** - Styling
-- **Framer Motion** - Animations
-- **Zustand** - State Management
-- **React Query** - Data Fetching
-- **Recharts** - Data Visualization
-- **React Hook Form** - Form Handling
-- **Zod** - Validation
+<!-- Replace with your actual stack -->
 
-### Backend (Coming Soon)
-- Node.js with Express
-- MongoDB for database
-- JWT Authentication
+| Layer      | Technology                         |
+|------------|------------------------------------|
+| Frontend   | React / Next.js, Tailwind CSS      |
+| Backend    | Node.js, Express                   |
+| Database   | MongoDB                            |
+| AI         | _(e.g. Gemini / OpenAI / Groq API)_|
+| Deployment | Vercel                             |
 
+---
 
-# Build for production
-npm run build
+##  Screenshots
+
+<!-- Add your screenshots to a /screenshots folder and link them -->
+| Dashboard | Transactions |
+|-----------|--------------|
+| ![Dashboard](./screenshots/dashboard.png) | ![Transactions](./screenshots/transactions.png) |
+
+---
+
+##  Project Structure
+
+```
+smart-finance-PaisaVedh/
+├── client/          # Frontend application
+├── server/          # Backend API
+├── .gitignore
+└── README.md
+```
+
+<!-- Update to match your real folder structure -->
+
+---
+
+##  Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v18 or higher
+- npm or yarn
+- A MongoDB database (local or [MongoDB Atlas](https://www.mongodb.com/atlas))
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/aryan-7050/smart-finance-PaisaVedh.git
+   cd smart-finance-PaisaVedh
+   ```
+
+2. **Install dependencies**
+   ```bash
+   # Frontend
+   cd client
+   npm install
+
+   # Backend
+   cd ../server
+   npm install
+   ```
+
+3. **Set up environment variables** (see below)
+
+4. **Run the app**
+   ```bash
+   # Start backend
+   cd server
+   npm run dev
+
+   # Start frontend (new terminal)
+   cd client
+   npm run dev
+   ```
+
+5. Open **http://localhost:3000** in your browser.
+
+---
+
+##  Environment Variables
+
+Create a `.env` file in the `server` folder:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+AI_API_KEY=your_ai_provider_api_key
+```
+
+And in the `client` folder (if needed):
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+>  Never commit your `.env` file to GitHub.
+
+---
+
+##  Deployment
+
+The frontend is deployed on **Vercel**: [paisavedh.vercel.app](https://paisavedh.vercel.app)
+
+---
+
+##  Contributing
+
+Contributions are welcome!
+
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m "Add your feature"`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+---
+
+##  License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+##  Author
+
+**Aryan**
+- GitHub: [@aryan-7050](https://github.com/aryan-7050)
+
+---
+
+⭐ If you found this project useful, please give it a star!

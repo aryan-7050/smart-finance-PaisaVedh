@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import multer from 'multer';
@@ -29,65 +29,13 @@ import { ReportController } from './controllers/report.controller';
 
 import logger from './utils/logger';
 
-// ============================================
-// ENVIRONMENT CONFIGURATION
-// ============================================
 
 dotenv.config();
 
 const app = express();
 
-// ============================================
-// RENDER CONFIGURATION
-// ============================================
-
-// Required when deploying Express behind Render's proxy
 app.set('trust proxy', 1);
 
-// ============================================
-// FILE UPLOAD CONFIGURATION
-// ============================================
-
-const upload = multer({
-  dest: 'uploads/',
-});
-
-// ============================================
-// DATABASE CONNECTION
-// ============================================
-
-connectDB();
-
-redisClient.connect().catch((error) => {
-  logger.error('Redis connection failed:', error);
-});
-
-// ============================================
-// CONTROLLERS
-// ============================================
-
-const authController = new AuthController();
-const transactionController = new TransactionController();
-const budgetController = new BudgetController();
-const analyticsController = new AnalyticsController();
-const savingsController = new SavingsController();
-const reportController = new ReportController();
-
-// ============================================
-// SECURITY
-// ============================================
-
-app.use(
-  helmet({
-    crossOriginResourcePolicy: {
-      policy: 'cross-origin',
-    },
-  })
-);
-
-// ============================================
-// CORS CONFIGURATION
-// ============================================
 
 const developmentOrigins = [
   'http://localhost:5173',
@@ -98,78 +46,73 @@ const developmentOrigins = [
 ];
 
 const productionOrigins = [
-  'https://smart-finance-paisavedh.onrender.com',
+  'https://smart-finance-paisa-vedh.vercel.app',
   'https://paisavedh-frontend.vercel.app',
   'https://paisavedh.vercel.app',
   'https://smart-finance-paisavedh.vercel.app',
 ];
 
-// FRONTEND_URL can be configured directly in Render
-const frontendUrl = process.env.FRONTEND_URL;
+// Optional additional frontend origin from Render environment variables
+const configuredFrontendUrl = process.env.FRONTEND_URL
+  ?.trim()
+  .replace(/\/+$/, '');
 
-if (frontendUrl) {
-  productionOrigins.push(frontendUrl);
+if (configuredFrontendUrl) {
+  productionOrigins.push(configuredFrontendUrl);
 }
 
-const allowedOrigins =
-  process.env.NODE_ENV === 'production'
-    ? productionOrigins
-    : developmentOrigins;
+const isProduction = process.env.NODE_ENV === 'production';
+
+const allowedOrigins = isProduction
+  ? productionOrigins
+  : developmentOrigins;
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests without an Origin header, such as server-to-server calls.
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    logger.warn(`Blocked by CORS: ${origin}`);
+
+    return callback(null, false);
+  },
+
+  credentials: true,
+
+  methods: [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'PATCH',
+    'OPTIONS',
+  ],
+
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+  ],
+
+  optionsSuccessStatus: 204,
+};
+
+
+app.use(cors(corsOptions));
 
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests without Origin header
-      // Example: Postman, curl, server-to-server requests
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      // Development mode
-      if (process.env.NODE_ENV !== 'production') {
-        return callback(null, true);
-      }
-
-      // Production mode
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      logger.warn(`Blocked by CORS: ${origin}`);
-
-      return callback(
-        new Error('Not allowed by CORS')
-      );
+  helmet({
+    crossOriginResourcePolicy: {
+      policy: 'cross-origin',
     },
-
-    credentials: true,
-
-    methods: [
-      'GET',
-      'POST',
-      'PUT',
-      'DELETE',
-      'PATCH',
-      'OPTIONS',
-    ],
-
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-    ],
   })
 );
-
-// ============================================
-// PREFLIGHT REQUESTS
-// ============================================
-
-app.options('*', cors());
-
-// ============================================
-// BASIC MIDDLEWARE
-// ============================================
 
 app.use(compression());
 
@@ -186,12 +129,30 @@ app.use(
   })
 );
 
+
+const upload = multer({
+  dest: 'uploads/',
+});
+
+connectDB();
+
+redisClient.connect().catch((error) => {
+  logger.error('Redis connection failed:', error);
+});
+
+
+const authController = new AuthController();
+const transactionController = new TransactionController();
+const budgetController = new BudgetController();
+const analyticsController = new AnalyticsController();
+const savingsController = new SavingsController();
+const reportController = new ReportController();
+
 // ============================================
 // RATE LIMITING
 // ============================================
 
 app.use('/api', limiter);
-
 app.use('/api/auth', authLimiter);
 
 // ============================================
@@ -203,7 +164,7 @@ app.get('/favicon.ico', (_req, res) => {
 });
 
 // ============================================
-// HEALTH / TEST ROUTES
+// HEALTH & TEST ROUTES
 // ============================================
 
 app.get('/', (_req, res) => {
@@ -280,50 +241,38 @@ app.put(
 app.get(
   '/api/transactions',
   protect,
-  transactionController.getTransactions.bind(
-    transactionController
-  )
+  transactionController.getTransactions.bind(transactionController)
 );
 
 app.post(
   '/api/transactions',
   protect,
-  transactionController.createTransaction.bind(
-    transactionController
-  )
+  transactionController.createTransaction.bind(transactionController)
 );
 
 app.post(
   '/api/transactions/upload-csv',
   protect,
   upload.single('file'),
-  transactionController.uploadCSV.bind(
-    transactionController
-  )
+  transactionController.uploadCSV.bind(transactionController)
 );
 
 app.get(
   '/api/transactions/stats',
   protect,
-  transactionController.getTransactionStats.bind(
-    transactionController
-  )
+  transactionController.getTransactionStats.bind(transactionController)
 );
 
 app.put(
   '/api/transactions/:id',
   protect,
-  transactionController.updateTransaction.bind(
-    transactionController
-  )
+  transactionController.updateTransaction.bind(transactionController)
 );
 
 app.delete(
   '/api/transactions/:id',
   protect,
-  transactionController.deleteTransaction.bind(
-    transactionController
-  )
+  transactionController.deleteTransaction.bind(transactionController)
 );
 
 // ============================================
@@ -367,25 +316,19 @@ app.get(
 app.get(
   '/api/analytics/dashboard',
   protect,
-  analyticsController.getDashboardData.bind(
-    analyticsController
-  )
+  analyticsController.getDashboardData.bind(analyticsController)
 );
 
 app.get(
   '/api/analytics/insights',
   protect,
-  analyticsController.getSpendingInsights.bind(
-    analyticsController
-  )
+  analyticsController.getSpendingInsights.bind(analyticsController)
 );
 
 app.get(
   '/api/analytics/cashflow',
   protect,
-  analyticsController.getCashFlow.bind(
-    analyticsController
-  )
+  analyticsController.getCashFlow.bind(analyticsController)
 );
 
 // ============================================
@@ -413,17 +356,13 @@ app.put(
 app.post(
   '/api/savings/goals/:id/contribute',
   protect,
-  savingsController.addContribution.bind(
-    savingsController
-  )
+  savingsController.addContribution.bind(savingsController)
 );
 
 app.delete(
   '/api/savings/goals/:id',
   protect,
-  savingsController.deleteGoal.bind(
-    savingsController
-  )
+  savingsController.deleteGoal.bind(savingsController)
 );
 
 // ============================================
@@ -433,37 +372,26 @@ app.delete(
 app.get(
   '/api/reports/generate',
   protect,
-  reportController.generateReport.bind(
-    reportController
-  )
+  reportController.generateReport.bind(reportController)
 );
 
 app.post(
   '/api/reports/send',
   protect,
-  reportController.sendReport.bind(
-    reportController
-  )
+  reportController.sendReport.bind(reportController)
 );
 
 app.get(
   '/api/reports/export',
   protect,
-  reportController.getExportData.bind(
-    reportController
-  )
+  reportController.getExportData.bind(reportController)
 );
 
 // ============================================
-// 404 HANDLER
+// 404 & GLOBAL ERROR HANDLERS
 // ============================================
 
 app.use(notFound);
-
-// ============================================
-// GLOBAL ERROR HANDLER
-// ============================================
-
 app.use(errorHandler);
 
 // ============================================
@@ -474,65 +402,34 @@ const PORT = Number(process.env.PORT) || 5003;
 
 const server = app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);
-
-  logger.info(
-    `🌍 Environment: ${
-      process.env.NODE_ENV || 'development'
-    }`
-  );
-
-  logger.info(
-    `🔗 API URL: http://localhost:${PORT}/api`
-  );
-
-  logger.info(
-    `🌐 FRONTEND_URL: ${
-      process.env.FRONTEND_URL || 'Not set'
-    }`
-  );
+  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🔗 API URL: /api`);
+  logger.info(`🌐 FRONTEND_URL: ${process.env.FRONTEND_URL || 'Not set'}`);
+  logger.info(`🔐 CORS allowed origins: ${allowedOrigins.join(', ')}`);
 });
 
-// ============================================
-// GRACEFUL SHUTDOWN
-// ============================================
 
 process.on('SIGTERM', () => {
-  logger.info(
-    'SIGTERM signal received: closing HTTP server'
-  );
+  logger.info('SIGTERM signal received: closing HTTP server');
 
   server.close(() => {
     logger.info('HTTP server closed');
 
-    redisClient
-      .disconnect()
-      .catch((error) => {
-        logger.error(
-          'Redis disconnect error:',
-          error
-        );
-      });
+    redisClient.disconnect().catch((error) => {
+      logger.error('Redis disconnect error:', error);
+    });
 
     process.exit(0);
   });
 });
 
-// ============================================
-// UNHANDLED PROMISE REJECTION
-// ============================================
 
-process.on(
-  'unhandledRejection',
-  (error) => {
-    logger.error(
-      'Unhandled Rejection:',
-      error
-    );
+process.on('unhandledRejection', (error) => {
+  logger.error('Unhandled Rejection:', error);
 
-    server.close(() => {
-      process.exit(1);
-    });
-  }
-);
+  server.close(() => {
+    process.exit(1);
+  });
+});
 
 export default app;

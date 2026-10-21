@@ -1,60 +1,60 @@
-# 💰 PaisaVedh - Personal Finance Management System
+#  PaisaVedh - Personal Finance Management System
 
-## 🚀 Overview
+##  Overview
 PaisaVedh is a modern, feature-rich personal finance management application that helps users track expenses, manage budgets, analyze spending patterns, and achieve financial goals. Built with cutting-edge technologies for a seamless user experience.
 
-## ✨ Features
+## Features
 
-### 📊 Dashboard
+###  Dashboard
 - Real-time financial overview
 - Interactive spending charts
 - Income vs expenses tracking
 - AI-powered insights
 - Quick actions for transactions
 
-### 💳 Transaction Management
+###  Transaction Management
 - Add, edit, delete transactions
 - CSV import/export
 - Advanced filtering and search
 - Category-based organization
 - Transaction history
 
-### 🎯 Budget Planning
+###  Budget Planning
 - Create monthly budgets by category
 - Real-time budget tracking
 - Budget utilization alerts
 - Visual progress indicators
 - Budget vs actual analysis
 
-### 📈 Analytics
+###  Analytics
 - Spending pattern analysis
 - Category-wise breakdown
 - Financial health score
 - Cash flow forecasting
 - AI-powered recommendations
 
-### 💰 Savings Goals
+###  Savings Goals
 - Set and track savings targets
 - Contribution tracking
 - Progress visualization
 - Goal-based recommendations
 - Timeline projections
 
-### 📄 Reports
+###  Reports
 - Generate financial reports
 - Export data (CSV/JSON)
 - Email report functionality
 - Custom date ranges
 - Transaction summaries
 
-### 👤 User Features
+###  User Features
 - Profile management
 - Dark/Light theme
 - Responsive design
 - Secure authentication
 - Role-based access (Admin/User)
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **React 18** - UI Framework

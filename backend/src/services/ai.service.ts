@@ -1,315 +1,500 @@
 import mongoose from 'mongoose';
 import { Transaction } from '../models/Transaction.model';
-import { Budget } from '../models/Budget.model';
 
-interface SpendingPattern {
+type SpendingTrend = 'increasing' | 'decreasing' | 'stable';
+
+interface MonthlySpending {
   category: string;
-  averageSpending: number;
-  trend: 'increasing' | 'decreasing' | 'stable';
-  recommendations: string[];
-}
-
-interface SpendingData {
-  _id: {
-    category: string;
-    month: number;
-    year: number;
-  };
+  month: number;
+  year: number;
   totalAmount: number;
   transactionCount: number;
 }
 
-export class AIService {
-  
-  async generateSpendingInsights(userId: string): Promise<any> {
-    try {
-      // Get last 6 months transactions
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+interface SpendingPattern {
+  category: string;
+  averageSpending: number;
+  trend: SpendingTrend;
+  recommendations: string[];
+}
 
-      const transactions = await Transaction.aggregate([
-        { 
-          $match: { 
+interface MonthlyTotal {
+  month: number;
+  year: number;
+  total: number;
+}
+
+interface SpendingInsights {
+  patterns: SpendingPattern[];
+  recommendations: string[];
+  savingsOpportunities: Array<{
+    type: 'subscription';
+    merchant: string;
+    potentialSavings: number;
+    description: string;
+    priority: 'medium';
+  }>;
+  predictedNextMonthExpenses: number;
+}
+
+const MONTHS_TO_ANALYZE = 6;
+const MONTHS_TO_PREDICT = 3;
+
+function getMonthStart(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function shiftMonth(date: Date, amount: number): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth() + amount,
+    1
+  );
+}
+
+function monthKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+export class AIService {
+  async generateSpendingInsights(
+    userId: string
+  ): Promise<SpendingInsights> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user ID');
+    }
+
+    try {
+      const now = new Date();
+      const currentMonth = getMonthStart(now);
+
+      // Include the current calendar month and five previous months.
+      const startDate = shiftMonth(
+        currentMonth,
+        -(MONTHS_TO_ANALYZE - 1)
+      );
+
+      const transactions = (await Transaction.aggregate([
+        {
+          $match: {
             userId: new mongoose.Types.ObjectId(userId),
-            date: { $gte: sixMonthsAgo },
-            type: 'debit'
-          }
+            date: { $gte: startDate, $lte: now },
+            type: 'debit',
+          },
         },
-        { 
+        {
           $group: {
-            _id: { 
+            _id: {
               category: '$category',
               month: { $month: '$date' },
-              year: { $year: '$date' }
+              year: { $year: '$date' },
             },
             totalAmount: { $sum: '$amount' },
-            transactionCount: { $sum: 1 }
-          }
+            transactionCount: { $sum: 1 },
+          },
         },
-        { 
-          $sort: { '_id.year': 1, '_id.month': 1 } 
-        }
-      ]);
+        {
+          $sort: {
+            '_id.year': 1,
+            '_id.month': 1,
+          },
+        },
+      ])) as Array<{
+        _id: {
+          category: string;
+          month: number;
+          year: number;
+        };
+        totalAmount: number;
+        transactionCount: number;
+      }>;
 
-      // Detect patterns
-      const patterns = this.detectSpendingPatterns(transactions as SpendingData[]);
-      
-      // Generate recommendations
-      const recommendations = this.generateRecommendations(patterns);
-      
-      // Find savings opportunities
-      const savingsOpportunities = await this.findSavingsOpportunities(userId);
-      
-      // Predict next month expenses
-      const predictedNextMonthExpenses = await this.predictNextMonthExpenses(userId);
-      
+      const monthlySpending: MonthlySpending[] =
+        transactions.map((item) => ({
+          category: item._id.category || 'Uncategorized',
+          month: item._id.month,
+          year: item._id.year,
+          totalAmount: item.totalAmount,
+          transactionCount: item.transactionCount,
+        }));
+
+      const patterns = this.detectSpendingPatterns(
+        monthlySpending,
+        startDate,
+        MONTHS_TO_ANALYZE
+      );
+
+      const recommendations =
+        this.generateRecommendations(patterns);
+
+      const savingsOpportunities =
+        await this.findSavingsOpportunities(userId);
+
+      const predictedNextMonthExpenses =
+        await this.predictNextMonthExpenses(userId);
+
       return {
         patterns,
         recommendations,
         savingsOpportunities,
-        predictedNextMonthExpenses
+        predictedNextMonthExpenses,
       };
     } catch (error) {
       console.error('AI Service Error:', error);
-      return {
-        patterns: [],
-        recommendations: [
-          "Track your expenses regularly to get personalized insights",
-          "Set up monthly budgets for your top spending categories",
-          "Save at least 20% of your income each month"
-        ],
-        savingsOpportunities: [],
-        predictedNextMonthExpenses: 0
-      };
+      throw error;
     }
   }
 
-  private detectSpendingPatterns(transactions: SpendingData[]): SpendingPattern[] {
-    const patterns: SpendingPattern[] = [];
-    const categoryMap = new Map<string, number[]>();
+  private detectSpendingPatterns(
+    transactions: MonthlySpending[],
+    startDate: Date,
+    numberOfMonths: number
+  ): SpendingPattern[] {
+    const categories = new Map<
+      string,
+      Map<string, number>
+    >();
 
-    // Group amounts by category
     for (const transaction of transactions) {
-      const category = transaction._id.category;
-      if (!categoryMap.has(category)) {
-        categoryMap.set(category, []);
+      if (!categories.has(transaction.category)) {
+        categories.set(transaction.category, new Map());
       }
-      categoryMap.get(category)!.push(transaction.totalAmount);
+
+      const key = monthKey(
+        transaction.year,
+        transaction.month
+      );
+
+      const monthlyTotals = categories.get(
+        transaction.category
+      )!;
+
+      monthlyTotals.set(
+        key,
+        (monthlyTotals.get(key) || 0) +
+          transaction.totalAmount
+      );
     }
 
-    // Analyze each category
-    for (const [category, amounts] of categoryMap.entries()) {
-      const averageSpending = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+    const patterns: SpendingPattern[] = [];
+
+    for (const [category, monthlyTotals] of categories) {
+      const amounts: number[] = [];
+
+      // Include zero-spending months in the analysis.
+      for (let i = 0; i < numberOfMonths; i++) {
+        const date = shiftMonth(startDate, i);
+
+        amounts.push(
+          monthlyTotals.get(
+            monthKey(date.getFullYear(), date.getMonth() + 1)
+          ) || 0
+        );
+      }
+
+      const averageSpending =
+        amounts.reduce((sum, amount) => sum + amount, 0) /
+        numberOfMonths;
+
       const trend = this.calculateTrend(amounts);
-      
+
       patterns.push({
         category,
-        averageSpending,
+        averageSpending: Math.round(averageSpending * 100) / 100,
         trend,
-        recommendations: this.getCategoryRecommendations(category, trend)
+        recommendations: this.getCategoryRecommendations(
+          category,
+          trend
+        ),
       });
     }
 
-    return patterns;
+    return patterns.sort(
+      (a, b) => b.averageSpending - a.averageSpending
+    );
   }
 
-  private calculateTrend(amounts: number[]): 'increasing' | 'decreasing' | 'stable' {
-    if (amounts.length < 2) return 'stable';
-    
-    const firstHalf = amounts.slice(0, Math.floor(amounts.length / 2));
-    const secondHalf = amounts.slice(Math.floor(amounts.length / 2));
-    
-    const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-    
-    const percentChange = ((secondAvg - firstAvg) / firstAvg) * 100;
-    
+  private calculateTrend(
+    amounts: number[]
+  ): SpendingTrend {
+    if (amounts.length < 2) {
+      return 'stable';
+    }
+
+    const splitIndex = Math.floor(amounts.length / 2);
+
+    const firstHalf = amounts.slice(0, splitIndex);
+    const secondHalf = amounts.slice(splitIndex);
+
+    const firstAverage =
+      firstHalf.reduce((sum, amount) => sum + amount, 0) /
+      firstHalf.length;
+
+    const secondAverage =
+      secondHalf.reduce((sum, amount) => sum + amount, 0) /
+      secondHalf.length;
+
+    if (firstAverage === 0) {
+      return secondAverage > 0 ? 'increasing' : 'stable';
+    }
+
+    const percentChange =
+      ((secondAverage - firstAverage) / firstAverage) * 100;
+
     if (percentChange > 10) return 'increasing';
     if (percentChange < -10) return 'decreasing';
+
     return 'stable';
   }
 
-  private getCategoryRecommendations(category: string, trend: string): string[] {
-    const recommendations: Record<string, Record<string, string[]>> = {
+  private getCategoryRecommendations(
+    category: string,
+    trend: SpendingTrend
+  ): string[] {
+    const recommendations: Record<
+      string,
+      Record<SpendingTrend, string[]>
+    > = {
       'Food & Dining': {
         increasing: [
-          'Your food expenses are rising. Consider meal prepping to save money',
-          'Try reducing dining out to twice per week',
-          'Use grocery delivery with subscription for discounts'
+          'Your food expenses are rising. Consider meal prepping.',
+          'Review dining-out expenses and set a weekly limit.',
         ],
         decreasing: [
-          'Great job reducing food expenses! Consider investing the savings',
-          'Keep tracking portion sizes to avoid waste'
+          'Your food spending has decreased. Keep tracking expenses.',
+          'Consider directing some savings toward your financial goals.',
         ],
         stable: [
-          'Your food spending is consistent. Look for loyalty programs for additional savings'
-        ]
+          'Your food spending is relatively stable. Look for opportunities to save.',
+        ],
       },
-      'Shopping': {
+
+      Shopping: {
         increasing: [
-          'Create a 24-hour rule before non-essential purchases',
-          'Unsubscribe from marketing emails to reduce impulse buys',
-          'Use price tracking tools for big purchases'
+          'Review non-essential purchases before buying.',
+          'Set a monthly shopping budget.',
         ],
         decreasing: [
-          'Excellent work reducing shopping expenses!',
-          'Consider setting up automatic savings with the money saved'
+          'Your shopping expenses have decreased. Maintain this habit.',
+          'Consider saving some of the money you have freed up.',
         ],
         stable: [
-          'Your shopping habits are consistent. Review if all purchases are necessary'
-        ]
+          'Review recurring purchases and identify unnecessary expenses.',
+        ],
       },
-      'Entertainment': {
+
+      Entertainment: {
         increasing: [
-          'Review unused subscriptions (average person wastes ₹500/month)',
-          'Look for free local events instead of paid ones',
-          'Share streaming service costs with family'
+          'Review subscriptions and entertainment expenses.',
+          'Set a monthly entertainment budget.',
         ],
         decreasing: [
-          'Great job cutting entertainment costs!',
-          'Use the savings for other financial goals'
+          'Your entertainment expenses have decreased.',
+          'Continue prioritizing the activities that matter most to you.',
         ],
         stable: [
-          'Your entertainment spending is under control. Keep it up!'
-        ]
+          'Your entertainment spending is relatively stable.',
+        ],
       },
-      'Transportation': {
+
+      Transportation: {
         increasing: [
-          'Consider public transportation to save on fuel costs',
-          'Car pool with colleagues to reduce expenses',
-          'Regular vehicle maintenance can improve fuel efficiency'
+          'Review fuel, public transport, and ride-sharing expenses.',
+          'Compare transportation options to reduce costs.',
         ],
         decreasing: [
-          'Excellent work reducing transportation costs!',
-          'Continue using cost-effective travel methods'
+          'Your transportation expenses have decreased.',
+          'Continue using cost-effective travel options.',
         ],
         stable: [
-          'Your transportation costs are well managed'
-        ]
-      }
+          'Your transportation spending is relatively stable.',
+        ],
+      },
     };
 
-    const defaultRecommendations = [
-      `Consider setting a monthly budget cap for ${category}`,
-      `Review ${category} expenses for potential savings of 15-20%`,
-      `Track ${category} spending weekly to stay within budget`
-    ];
-
     const categoryRecommendations = recommendations[category];
+
     if (categoryRecommendations) {
-      return categoryRecommendations[trend] || defaultRecommendations;
+      return categoryRecommendations[trend];
     }
-    
-    return defaultRecommendations;
+
+    if (trend === 'increasing') {
+      return [
+        `Review your ${category} expenses for possible savings.`,
+        `Consider setting a monthly budget for ${category}.`,
+      ];
+    }
+
+    if (trend === 'decreasing') {
+      return [
+        `Your ${category} spending has decreased. Continue tracking it.`,
+      ];
+    }
+
+    return [
+      `Track your ${category} spending and review it against your budget.`,
+    ];
   }
 
-  private generateRecommendations(patterns: SpendingPattern[]): string[] {
+  private generateRecommendations(
+    patterns: SpendingPattern[]
+  ): string[] {
     const recommendations: string[] = [];
-    
-    // Add high-priority recommendations based on patterns
+
     for (const pattern of patterns) {
-      if (pattern.trend === 'increasing' && pattern.averageSpending > 5000) {
-        recommendations.push(`⚠️ Your ${pattern.category} spending is increasing. Review and reduce expenses in this category.`);
+      if (
+        pattern.trend === 'increasing' &&
+        pattern.averageSpending > 5000
+      ) {
+        recommendations.push(
+          `Your ${pattern.category} spending is increasing. Review this category against your budget.`
+        );
       }
     }
-    
-    // Add general recommendations if none specific
+
     if (recommendations.length === 0) {
       recommendations.push(
-        "Set up automatic savings of 20% of your income each month",
-        "Review and cancel unused subscriptions to save ₹1000-2000 monthly",
-        "Use the 50/30/20 rule: 50% needs, 30% wants, 20% savings",
-        "Build an emergency fund covering 6 months of expenses",
-        "Track every expense for one month to identify spending patterns"
+        'Review your monthly expenses and identify opportunities to save.',
+        'Track spending regularly to understand your financial habits.',
+        'Consider setting realistic budgets for your main spending categories.',
+        'Build an emergency fund according to your financial circumstances.',
+        'Review recurring payments and cancel services you no longer need.'
       );
     }
-    
+
     return recommendations.slice(0, 5);
   }
 
-  private async findSavingsOpportunities(userId: string): Promise<any[]> {
+  private async findSavingsOpportunities(
+    userId: string
+  ): Promise<SpendingInsights['savingsOpportunities']> {
     try {
-      const opportunities: any[] = [];
-      
-      // Find recurring subscriptions
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-      
+      const currentMonth = getMonthStart(new Date());
+
+      // Examine the current month and previous two months.
+      const startDate = shiftMonth(currentMonth, -2);
+
       const subscriptions = await Transaction.aggregate([
-        { 
-          $match: { 
+        {
+          $match: {
             userId: new mongoose.Types.ObjectId(userId),
-            date: { $gte: threeMonthsAgo },
+            date: { $gte: startDate },
             type: 'debit',
-            amount: { $lte: 2000 } // Subscriptions are usually small amounts
-          }
+            amount: { $gt: 0, $lte: 2000 },
+            merchant: {
+              $exists: true,
+              $type: 'string',
+              $nin: ['', null],
+            },
+          },
         },
-        { 
+        {
           $group: {
-            _id: '$merchant',
-            count: { $sum: 1 },
-            totalAmount: { $sum: '$amount' },
-            averageAmount: { $avg: '$amount' }
-          }
+            _id: {
+              merchant: '$merchant',
+              year: { $year: '$date' },
+              month: { $month: '$date' },
+            },
+            monthlyTotal: { $sum: '$amount' },
+          },
         },
-        { 
-          $match: { 
-            count: { $gte: 3 } // At least 3 times in 3 months
-          }
-        }
+        {
+          $group: {
+            _id: '$_id.merchant',
+            activeMonths: { $sum: 1 },
+            averageMonthlyAmount: {
+              $avg: '$monthlyTotal',
+            },
+          },
+        },
+        {
+          // Require activity in at least two distinct months.
+          $match: {
+            activeMonths: { $gte: 2 },
+          },
+        },
       ]);
-      
-      for (const sub of subscriptions) {
-        opportunities.push({
-          type: 'subscription',
-          merchant: sub._id,
-          potentialSavings: sub.averageAmount * 12,
-          description: `Consider canceling ${sub._id} subscription if not needed`,
-          priority: 'medium'
-        });
-      }
-      
-      return opportunities;
+
+      return subscriptions.map((item) => ({
+        type: 'subscription' as const,
+        merchant: item._id,
+        potentialSavings:
+          Math.round(item.averageMonthlyAmount * 12 * 100) / 100,
+        description:
+          `Review recurring payments to ${item._id} and cancel the service if it is no longer needed.`,
+        priority: 'medium' as const,
+      }));
     } catch (error) {
       console.error('Find savings opportunities error:', error);
       return [];
     }
   }
 
-  private async predictNextMonthExpenses(userId: string): Promise<number> {
+  private async predictNextMonthExpenses(
+    userId: string
+  ): Promise<number> {
     try {
-      const last3Months = await Transaction.aggregate([
-        { 
-          $match: { 
-            userId: new mongoose.Types.ObjectId(userId), 
-            type: 'debit' 
-          }
-        },
-        { 
-          $group: {
-            _id: { 
-              month: { $month: '$date' }, 
-              year: { $year: '$date' } 
-            },
-            total: { $sum: '$amount' }
-          }
-        },
-        { 
-          $sort: { '_id.year': -1, '_id.month': -1 } 
-        },
-        { 
-          $limit: 3 
-        }
-      ]);
+      const currentMonth = getMonthStart(new Date());
 
-      if (last3Months.length === 0) return 0;
-      
-      // Simple moving average prediction
-      const sum = last3Months.reduce((acc, curr) => acc + curr.total, 0);
-      const average = sum / last3Months.length;
-      
-      // Add 10% buffer for inflation/uncertainty
-      return Math.round(average * 1.1);
+      // Use the three most recent completed calendar months.
+      const endDate = currentMonth;
+      const startDate = shiftMonth(
+        currentMonth,
+        -MONTHS_TO_PREDICT
+      );
+
+      const monthlyTotals = (await Transaction.aggregate([
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(userId),
+            type: 'debit',
+            date: {
+              $gte: startDate,
+              $lt: endDate,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              month: { $month: '$date' },
+              year: { $year: '$date' },
+            },
+            total: { $sum: '$amount' },
+          },
+        },
+      ])) as Array<{
+        _id: { month: number; year: number };
+        total: number;
+      }>;
+
+      const totalsByMonth = new Map<string, number>();
+
+      for (const item of monthlyTotals) {
+        totalsByMonth.set(
+          monthKey(item._id.year, item._id.month),
+          item.total
+        );
+      }
+
+      const completedMonths: number[] = [];
+
+      for (let i = 0; i < MONTHS_TO_PREDICT; i++) {
+        const date = shiftMonth(startDate, i);
+
+        completedMonths.push(
+          totalsByMonth.get(
+            monthKey(date.getFullYear(), date.getMonth() + 1)
+          ) || 0
+        );
+      }
+
+      const average =
+        completedMonths.reduce((sum, amount) => sum + amount, 0) /
+        MONTHS_TO_PREDICT;
+
+      // Simple baseline estimate, not a statistical forecast.
+      return Math.round(average * 100) / 100;
     } catch (error) {
       console.error('Predict expenses error:', error);
       return 0;

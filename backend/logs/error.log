@@ -34,3 +34,24 @@ Error: Not Found - /auth/login
     at Layer.handle [as handle_request] (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\layer.js:95:5)
     at trim_prefix (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:328:13)
     at C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:286:9  
+2026-09-11 09:16:33 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.om0zmzi.mongodb.net"}
+2026-09-11 09:20:06 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:24:33 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:25:43 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:27:28 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:28:06 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.om0zmzi.mongodb.net"}
+2026-09-11 09:28:50 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}

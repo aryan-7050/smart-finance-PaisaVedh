@@ -1,0 +1,225 @@
+2026-08-28 07:16:58 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:16:58 [INFO]: 🚀 Server running on port 5001  
+2026-08-28 07:16:58 [INFO]: 🌍 Environment: development  
+2026-08-28 07:16:58 [INFO]: 🔗 API URL: http://localhost:5001/api  
+2026-08-28 07:16:58 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:16:59 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:17:33 [WARN]: MongoDB disconnected  
+2026-08-28 07:22:06 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:22:06 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:22:06 [INFO]: 🌍 Environment: development  
+2026-08-28 07:22:06 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:22:06 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:22:07 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:22:32 [ERROR]: Not Found - /favicon.ico
+Error: Not Found - /favicon.ico
+    at notFound (C:\Users\ARYAN\.vscode\PaisaVedh\backend\src\middleware\error.middleware.ts:6:17)
+    at Layer.handle [as handle_request] (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:280:10)
+    at urlencodedParser (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\body-parser\lib\types\urlencoded.js:91:7)
+    at Layer.handle [as handle_request] (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:286:9  
+2026-08-28 07:24:03 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:24:03 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:24:03 [INFO]: 🌍 Environment: development  
+2026-08-28 07:24:03 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:24:03 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:24:04 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:27:43 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:27:43 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:27:43 [INFO]: 🌍 Environment: development  
+2026-08-28 07:27:43 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:27:43 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:27:45 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:28:15 [WARN]: MongoDB disconnected  
+2026-08-28 07:28:46 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:28:46 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:28:46 [INFO]: 🌍 Environment: development  
+2026-08-28 07:28:46 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:28:46 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:28:48 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:30:39 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:30:39 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:30:39 [INFO]: 🌍 Environment: development  
+2026-08-28 07:30:39 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:30:39 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:30:41 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:34:51 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:34:51 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:34:51 [INFO]: 🌍 Environment: development  
+2026-08-28 07:34:51 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:34:51 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:34:53 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:36:04 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:36:04 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:36:04 [INFO]: 🌍 Environment: development  
+2026-08-28 07:36:04 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:36:04 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:36:06 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:36:24 [WARN]: MongoDB disconnected  
+2026-08-28 07:36:34 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:36:34 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:36:34 [INFO]: 🌍 Environment: development  
+2026-08-28 07:36:34 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:36:34 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:36:35 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:41:09 [ERROR]: Not Found - /auth/login
+Error: Not Found - /auth/login
+    at notFound (C:\Users\ARYAN\.vscode\PaisaVedh\backend\src\middleware\error.middleware.ts:6:17)
+    at Layer.handle [as handle_request] (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:280:10)
+    at urlencodedParser (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\body-parser\lib\types\urlencoded.js:82:7)
+    at Layer.handle [as handle_request] (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:286:9  
+2026-08-28 07:41:11 [ERROR]: Not Found - /auth/login
+Error: Not Found - /auth/login
+    at notFound (C:\Users\ARYAN\.vscode\PaisaVedh\backend\src\middleware\error.middleware.ts:6:17)
+    at Layer.handle [as handle_request] (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:280:10)
+    at urlencodedParser (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\body-parser\lib\types\urlencoded.js:82:7)
+    at Layer.handle [as handle_request] (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\ARYAN\.vscode\PaisaVedh\backend\node_modules\express\lib\router\index.js:286:9  
+2026-08-28 07:46:24 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 07:46:24 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 07:46:24 [INFO]: 🌍 Environment: development  
+2026-08-28 07:46:24 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 07:46:24 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 07:46:26 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 07:57:10 [WARN]: MongoDB disconnected  
+2026-08-28 08:03:07 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 08:03:07 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 08:03:07 [INFO]: 🌍 Environment: development  
+2026-08-28 08:03:07 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 08:03:07 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 08:03:08 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 08:06:07 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 08:06:07 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 08:06:07 [INFO]: 🌍 Environment: development  
+2026-08-28 08:06:07 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 08:06:07 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 08:06:08 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-02.om0zmzi.mongodb.net  
+2026-08-28 08:07:06 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 08:07:06 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 08:07:06 [INFO]: 🌍 Environment: development  
+2026-08-28 08:07:06 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 08:07:06 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 08:07:06 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 08:07:54 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 08:07:54 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 08:07:54 [INFO]: 🌍 Environment: development  
+2026-08-28 08:07:54 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 08:07:54 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 08:07:56 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-02.om0zmzi.mongodb.net  
+2026-08-28 08:19:33 [WARN]: MongoDB disconnected  
+2026-08-28 08:37:52 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 08:37:52 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 08:37:52 [INFO]: 🌍 Environment: development  
+2026-08-28 08:37:52 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 08:37:52 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 08:37:54 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-00.om0zmzi.mongodb.net  
+2026-08-28 08:39:31 [WARN]: MongoDB disconnected  
+2026-08-28 08:49:46 [INFO]: Mock Redis connected (in-memory storage)  
+2026-08-28 08:49:46 [INFO]: 🚀 Server running on port 5003  
+2026-08-28 08:49:46 [INFO]: 🌍 Environment: development  
+2026-08-28 08:49:46 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-08-28 08:49:46 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-08-28 08:49:47 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-02.om0zmzi.mongodb.net  
+2026-09-01 09:05:56 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-01 09:05:56 [INFO]: 🚀 Server running on port 5003  
+2026-09-01 09:05:56 [INFO]: 🌍 Environment: development  
+2026-09-01 09:05:56 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-01 09:05:56 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-01 09:05:56 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-02.om0zmzi.mongodb.net  
+2026-09-01 09:30:12 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-01 09:30:12 [INFO]: 🚀 Server running on port 5003  
+2026-09-01 09:30:12 [INFO]: 🌍 Environment: development  
+2026-09-01 09:30:12 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-01 09:30:12 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-01 09:30:13 [INFO]: MongoDB Atlas Connected: ac-nofaqzx-shard-00-01.om0zmzi.mongodb.net  
+2026-09-11 09:16:33 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-11 09:16:33 [INFO]: 🚀 Server running on port 5003  
+2026-09-11 09:16:33 [INFO]: 🌍 Environment: development  
+2026-09-11 09:16:33 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-11 09:16:33 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-11 09:16:33 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.om0zmzi.mongodb.net"}
+2026-09-11 09:20:05 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-11 09:20:05 [INFO]: 🚀 Server running on port 5003  
+2026-09-11 09:20:05 [INFO]: 🌍 Environment: development  
+2026-09-11 09:20:05 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-11 09:20:05 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-11 09:20:06 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:24:33 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-11 09:24:33 [INFO]: 🚀 Server running on port 5003  
+2026-09-11 09:24:33 [INFO]: 🌍 Environment: development  
+2026-09-11 09:24:33 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-11 09:24:33 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-11 09:24:33 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:25:43 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-11 09:25:43 [INFO]: 🚀 Server running on port 5003  
+2026-09-11 09:25:43 [INFO]: 🌍 Environment: development  
+2026-09-11 09:25:43 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-11 09:25:43 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-11 09:25:43 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:27:28 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-11 09:27:28 [INFO]: 🚀 Server running on port 5003  
+2026-09-11 09:27:28 [INFO]: 🌍 Environment: development  
+2026-09-11 09:27:28 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-11 09:27:28 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-11 09:27:28 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-09-11 09:28:06 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-11 09:28:06 [INFO]: 🚀 Server running on port 5003  
+2026-09-11 09:28:06 [INFO]: 🌍 Environment: development  
+2026-09-11 09:28:06 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-11 09:28:06 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-11 09:28:06 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.om0zmzi.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.om0zmzi.mongodb.net"}
+2026-09-11 09:28:50 [INFO]: Mock Redis connected (in-memory storage)  
+2026-09-11 09:28:50 [INFO]: 🚀 Server running on port 5003  
+2026-09-11 09:28:50 [INFO]: 🌍 Environment: development  
+2026-09-11 09:28:50 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-09-11 09:28:50 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-09-11 09:28:50 [ERROR]: Database connection error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net 
+Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.sy7hcgj.mongodb.net
+    at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {"code":"ESERVFAIL","syscall":"querySrv","hostname":"_mongodb._tcp.cluster0.sy7hcgj.mongodb.net"}
+2026-10-21 18:26:42 [INFO]: Mock Redis connected (in-memory storage)  
+2026-10-21 18:26:42 [INFO]: 🚀 Server running on port 5003  
+2026-10-21 18:26:42 [INFO]: 🌍 Environment: development  
+2026-10-21 18:26:42 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-10-21 18:26:42 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-10-21 18:26:43 [INFO]: MongoDB Atlas Connected: ac-o5nzzlt-shard-00-00.sy7hcgj.mongodb.net  
+2026-10-21 18:30:46 [INFO]: Mock Redis connected (in-memory storage)  
+2026-10-21 18:30:46 [INFO]: 🚀 Server running on port 5003  
+2026-10-21 18:30:46 [INFO]: 🌍 Environment: development  
+2026-10-21 18:30:46 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-10-21 18:30:46 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-10-21 18:30:46 [INFO]: MongoDB Atlas Connected: ac-o5nzzlt-shard-00-00.sy7hcgj.mongodb.net  
+2026-10-21 18:37:57 [INFO]: Mock Redis connected (in-memory storage)  
+2026-10-21 18:37:57 [INFO]: 🚀 Server running on port 5003  
+2026-10-21 18:37:57 [INFO]: 🌍 Environment: development  
+2026-10-21 18:37:57 [INFO]: 🔗 API URL: http://localhost:5003/api  
+2026-10-21 18:37:57 [INFO]: 🌐 FRONTEND_URL: http://localhost:3000  
+2026-10-21 18:37:58 [INFO]: MongoDB Atlas Connected: ac-o5nzzlt-shard-00-00.sy7hcgj.mongodb.net  
+2026-10-21 18:40:08 [WARN]: MongoDB disconnected  
